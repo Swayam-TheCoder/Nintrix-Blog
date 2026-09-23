@@ -21,10 +21,16 @@ export const requireAuth = async (req, res, next) => {
 
     const token = authHeader.substring(7);
 
-    const { payload } = await jwtVerify(token, supabaseJWKS, {
-      issuer: `${process.env.SUPABASE_URL}/auth/v1`,
-      audience: "authenticated"
-    });
+    const { payload } = await jwtVerify(
+      token,
+      supabaseJWKS,
+      {
+        issuer: `${process.env.SUPABASE_URL}/auth/v1`,
+        audience: "authenticated"
+      }
+    );
+
+    req.accessToken = token;
 
     req.user = {
       id: payload.sub,
@@ -34,7 +40,10 @@ export const requireAuth = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error("JWT verification failed:", error.message);
+    console.error(
+      "JWT verification failed:",
+      error.message
+    );
 
     return res.status(401).json({
       success: false,
