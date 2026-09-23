@@ -98,3 +98,20 @@ export const updateUserPassword = async (accessToken, password) => {
 
   return data;
 };
+
+export const getGoogleOAuthUrl = async () => {
+  const { data, error } =
+    await supabaseAuth.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo:
+          process.env.GOOGLE_OAUTH_REDIRECT_URL
+      }
+    });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data.url;
+};

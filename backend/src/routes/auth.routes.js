@@ -6,7 +6,8 @@ import {
   me,
   refresh,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  googleLogin
 } from "../controllers/auth.controller.js";
 
 import { requireAuth } from "../middleware/auth.middleware.js";
@@ -20,6 +21,7 @@ router.post("/refresh", refresh);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", requireAuth, resetPassword);
 
+router.get("/google", googleLogin);
 router.post("/logout", requireAuth, logout);
 router.get("/me", requireAuth, me);
 

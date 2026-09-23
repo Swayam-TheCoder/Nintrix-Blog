@@ -5,7 +5,8 @@ import {
   getUserFromToken,
   refreshUserSession,
   sendPasswordResetEmail,
-  updateUserPassword
+  updateUserPassword,
+  getGoogleOAuthUrl
 } from "../services/auth.service.js";
 
 import {
@@ -164,6 +165,24 @@ export const resetPassword = async (req, res) => {
     return res.status(400).json({
       success: false,
       message: error.message
+    });
+  }
+};
+
+export const googleLogin = async (req, res) => {
+  try {
+    const url = await getGoogleOAuthUrl();
+
+    return res.status(200).json({
+      success: true,
+      url
+    });
+  } catch (error) {
+    console.error("Google OAuth error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to start Google authentication"
     });
   }
 };
