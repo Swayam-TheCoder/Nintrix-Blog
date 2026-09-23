@@ -67,3 +67,34 @@ export const getUserFromToken = async (accessToken) => {
 
   return data.user;
 };
+
+export const sendPasswordResetEmail = async (email) => {
+  const { data, error } =
+    await supabaseAuth.auth.resetPasswordForEmail(email, {
+      redirectTo: process.env.PASSWORD_RESET_REDIRECT_URL
+    });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
+export const updateUserPassword = async (accessToken, password) => {
+  const { data, error } =
+    await supabaseAuth.auth.updateUser(
+      {
+        password
+      },
+      {
+        accessToken
+      }
+    );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
