@@ -1,4 +1,4 @@
-import { supabaseAuth } from "../config/supabase.js";
+import { supabaseAuth, supabaseAdmin } from "../config/supabase.js";
 
 export const signupUser = async ({ email, password, name }) => {
   const { data, error } = await supabaseAuth.auth.signUp({
@@ -32,11 +32,25 @@ export const loginUser = async ({ email, password }) => {
   return data;
 };
 
+export const refreshUserSession = async (refreshToken) => {
+  const { data, error } =
+    await supabaseAuth.auth.refreshSession({
+      refresh_token: refreshToken
+    });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};
+
 export const logoutUser = async (accessToken) => {
-  const { error } = await supabaseAuth.auth.admin.signOut(
-    accessToken,
-    "local"
-  );
+  const { error } =
+    await supabaseAdmin.auth.admin.signOut(
+      accessToken,
+      "local"
+    );
 
   if (error) {
     throw new Error(error.message);

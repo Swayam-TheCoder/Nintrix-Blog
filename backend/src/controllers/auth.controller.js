@@ -2,7 +2,8 @@ import {
   signupUser,
   loginUser,
   logoutUser,
-  getUserFromToken
+  getUserFromToken,
+  refreshUserSession
 } from "../services/auth.service.js";
 
 import {
@@ -51,6 +52,35 @@ export const login = async (req, res) => {
     return res.status(401).json({
       success: false,
       message: error.message
+    });
+  }
+};
+
+export const refresh = async (req, res) => {
+  try {
+    const { refresh_token } = req.body;
+
+    if (!refresh_token) {
+      return res.status(400).json({
+        success: false,
+        message: "Refresh token is required"
+      });
+    }
+
+    const result = await refreshUserSession(refresh_token);
+
+    return res.status(200).json({
+      success: true,
+      message: "Session refreshed successfully",
+      user: result.user,
+      session: result.session
+    });
+  } catch (error) {
+    console.error("Refresh session error:", error);
+
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired refresh token"
     });
   }
 };
