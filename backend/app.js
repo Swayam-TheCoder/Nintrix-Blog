@@ -7,6 +7,7 @@ import testRoutes from "./src/routes/test.routes.js";
 import authRoutes from "./src/routes/auth.routes.js";
 import profileRoutes from "./src/routes/profile.routes.js";
 import repositoryRoutes from "./src/routes/repository.routes.js";
+import memberRoutes from "./src/routes/member.routes.js";
 
 const app = express();
 
@@ -37,5 +38,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/test", testRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/repositories", repositoryRoutes);
+app.use("/api/repositories", memberRoutes);
 
 export default app;
