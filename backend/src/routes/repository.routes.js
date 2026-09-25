@@ -1,27 +1,25 @@
 import { Router } from "express";
 
-import { requireAuth } from "../middleware/auth.middleware.js";
-
 import {
   create,
   getMine,
   getOne,
   update,
-  remove
+  remove,
 } from "../controllers/repository.controller.js";
+
+import { requireAuth } from "../middleware/auth.middleware.js";
 
 const router = Router();
 
-router.use(requireAuth);
+router.post("/", requireAuth, create);
 
-router.post("/", create);
+router.get("/", requireAuth, getMine);
 
-router.get("/", getMine);
+router.get("/:repositoryId", requireAuth, getOne);
 
-router.get("/:repositoryId", getOne);
+router.patch("/:repositoryId", requireAuth, update);
 
-router.patch("/:repositoryId", update);
-
-router.delete("/:repositoryId", remove);
+router.delete("/:repositoryId", requireAuth, remove);
 
 export default router;

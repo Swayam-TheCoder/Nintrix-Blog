@@ -1,6 +1,6 @@
 import {
   createRepository,
-  getUserRepositories,
+  getMyRepositories,
   getRepositoryById,
   updateRepository,
   deleteRepository
@@ -13,11 +13,11 @@ import {
 
 export const create = async (req, res) => {
   try {
-    const validatedData = createRepositorySchema.parse(req.body);
+    const body = createRepositorySchema.parse(req.body);
 
     const repository = await createRepository({
-      userId: req.user.id,
-      ...validatedData
+      ownerId: req.user.id,
+      ...body
     });
 
     return res.status(201).json({
@@ -37,7 +37,9 @@ export const create = async (req, res) => {
 
 export const getMine = async (req, res) => {
   try {
-    const repositories = await getUserRepositories(req.user.id);
+    const repositories = await getMyRepositories(
+      req.user.id
+    );
 
     return res.status(200).json({
       success: true,
@@ -48,7 +50,7 @@ export const getMine = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch repositories"
+      message: error.message
     });
   }
 };
@@ -56,7 +58,8 @@ export const getMine = async (req, res) => {
 export const getOne = async (req, res) => {
   try {
     const repository = await getRepositoryById(
-      req.params.repositoryId
+      req.params.repositoryId,
+      req.user.id
     );
 
     return res.status(200).json({
@@ -68,19 +71,22 @@ export const getOne = async (req, res) => {
 
     return res.status(404).json({
       success: false,
-      message: "Repository not found"
+      message: error.message
     });
   }
 };
 
 export const update = async (req, res) => {
   try {
-    const validatedData = updateRepositorySchema.parse(req.body);
+    const updates = updateRepositorySchema.parse(
+      req.body
+    );
 
-    const repository = await updateRepository({
-      repositoryId: req.params.repositoryId,
-      ...validatedData
-    });
+    const repository = await updateRepository(
+      req.params.repositoryId,
+      req.user.id,
+      updates
+    );
 
     return res.status(200).json({
       success: true,
@@ -99,7 +105,10 @@ export const update = async (req, res) => {
 
 export const remove = async (req, res) => {
   try {
-    await deleteRepository(req.params.repositoryId);
+    await deleteRepository(
+      req.params.repositoryId,
+      req.user.id
+    );
 
     return res.status(200).json({
       success: true,
@@ -108,9 +117,9 @@ export const remove = async (req, res) => {
   } catch (error) {
     console.error("Delete repository error:", error);
 
-    return res.status(500).json({
+    return res.status(400).json({
       success: false,
-      message: "Failed to delete repository"
+      message: error.message
     });
   }
 };
