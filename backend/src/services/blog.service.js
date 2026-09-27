@@ -198,3 +198,87 @@ export const deleteBlog = async ({
     throw new Error(error.message);
   }
 };
+
+export const changeBlogStatus = async ({
+  repositoryId,
+  blogId,
+  status
+}) => {
+  const { data: blog, error: findError } =
+    await supabaseAdmin
+      .from("blogs")
+      .select("id, status")
+      .eq("id", blogId)
+      .eq("repository_id", repositoryId)
+      .single();
+
+  if (findError || !blog) {
+    throw new Error("Blog not found");
+  }
+
+  // Publishing
+  if (status === "PUBLISHED") {
+    const { data, error } = await supabaseAdmin
+      .from("blogs")
+      .update({
+        status: "PUBLISHED",
+        published_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", blogId)
+      .eq("repository_id", repositoryId)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data;
+  }
+
+  // Move back to draft
+  if (status === "DRAFT") {
+    const { data, error } = await supabaseAdmin
+      .from("blogs")
+      .update({
+        status: "DRAFT",
+        published_at: null,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", blogId)
+      .eq("repository_id", repositoryId)
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data;
+  }
+
+  throw new Error("Invalid blog status");
+};
+
+export const archiveBlog = async ({
+  repositoryId,
+  blogId
+}) => {
+  const { data, error } = await supabaseAdmin
+    .from("blogs")
+    .update({
+      status: "ARCHIVED",
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", blogId)
+    .eq("repository_id", repositoryId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data;
+};

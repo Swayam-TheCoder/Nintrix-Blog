@@ -5,7 +5,9 @@ import {
   getAll,
   getOne,
   update,
-  remove
+  remove,
+  archive,
+  changeStatus
 } from "../controllers/blog.controller.js";
 
 import { requireAuth } from "../middleware/auth.middleware.js";
@@ -53,6 +55,24 @@ router.delete(
   requireRepositoryAccess,
   requireRepositoryRole("OWNER"),
   remove
+);
+
+// STATUS
+router.patch(
+  "/:repositoryId/blogs/:blogId/status",
+  requireAuth,
+  requireRepositoryAccess,
+  requireRepositoryRole("OWNER", "EDITOR"),
+  changeStatus
+);
+
+// ARCHIVE
+router.patch(
+  "/:repositoryId/blogs/:blogId/archive",
+  requireAuth,
+  requireRepositoryAccess,
+  requireRepositoryRole("OWNER"),
+  archive
 );
 
 export default router;

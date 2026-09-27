@@ -61,3 +61,7 @@ export const updateBlogSchema = z.object({
     .optional()
     .nullable()
 });
+
+export const publishBlogSchema = z.object({
+  status: z.enum(["PUBLISHED", "DRAFT"])
+});
