@@ -13,7 +13,7 @@ import {
 import { requireAuth } from "../middleware/auth.middleware.js";
 
 import {
-  requireRepositoryAccess,
+  requireRepositoryMember,
   requireRepositoryRole
 } from "../middleware/repository.middleware.js";
 
@@ -22,7 +22,7 @@ const router = Router();
 router.post(
   "/:repositoryId/blogs",
   requireAuth,
-  requireRepositoryAccess,
+  requireRepositoryMember,
   requireRepositoryRole("OWNER", "EDITOR"),
   create
 );
@@ -30,21 +30,21 @@ router.post(
 router.get(
   "/:repositoryId/blogs",
   requireAuth,
-  requireRepositoryAccess,
+  requireRepositoryMember,
   getAll
 );
 
 router.get(
   "/:repositoryId/blogs/:blogId",
   requireAuth,
-  requireRepositoryAccess,
+  requireRepositoryMember,
   getOne
 );
 
 router.patch(
   "/:repositoryId/blogs/:blogId",
   requireAuth,
-  requireRepositoryAccess,
+  requireRepositoryMember,
   requireRepositoryRole("OWNER", "EDITOR"),
   update
 );
@@ -52,25 +52,23 @@ router.patch(
 router.delete(
   "/:repositoryId/blogs/:blogId",
   requireAuth,
-  requireRepositoryAccess,
+  requireRepositoryMember,
   requireRepositoryRole("OWNER"),
   remove
 );
 
-// STATUS
 router.patch(
   "/:repositoryId/blogs/:blogId/status",
   requireAuth,
-  requireRepositoryAccess,
+  requireRepositoryMember,
   requireRepositoryRole("OWNER", "EDITOR"),
   changeStatus
 );
 
-// ARCHIVE
 router.patch(
   "/:repositoryId/blogs/:blogId/archive",
   requireAuth,
-  requireRepositoryAccess,
+  requireRepositoryMember,
   requireRepositoryRole("OWNER"),
   archive
 );

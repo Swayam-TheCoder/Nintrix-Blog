@@ -113,3 +113,71 @@ export const requireRepositoryRole = (
     next();
   };
 };
+
+export const requireRepositoryMember = async (req, res, next) => {
+  try {
+    const { repositoryId } = req.params;
+
+    if (!repositoryId) {
+      return res.status(400).json({
+        success: false,
+        message: "Repository ID is required"
+      });
+    }
+
+    const { data: repository, error } = await supabaseAdmin
+      .from("repositories")
+      .select("id, owner_id, visibility")
+      .eq("id", repositoryId)
+      .single();
+
+    if (error || !repository) {
+      return res.status(404).json({
+        success: false,
+        message: "Repository not found"
+      });
+    }
+
+    // Owner
+    if (repository.owner_id === req.user.id) {
+      req.repository = repository;
+      req.repositoryRole = "OWNER";
+      return next();
+    }
+
+    // Member
+    const { data: member, error: memberError } = await supabaseAdmin
+      .from("repository_members")
+      .select("role")
+      .eq("repository_id", repositoryId)
+      .eq("user_id", req.user.id)
+      .maybeSingle();
+
+    if (memberError) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to verify repository membership"
+      });
+    }
+
+    if (!member) {
+      return res.status(403).json({
+        success: false,
+        message: "You are not a member of this repository"
+      });
+    }
+
+    req.repository = repository;
+    req.repositoryRole = member.role;
+
+    next();
+
+  } catch (error) {
+    console.error("Repository member middleware error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to verify repository membership"
+    });
+  }
+};

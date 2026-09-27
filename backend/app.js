@@ -10,6 +10,7 @@ import repositoryRoutes from "./src/routes/repository.routes.js";
 import memberRoutes from "./src/routes/member.routes.js";
 import blogRoutes from "./src/routes/blog.routes.js";
 import blogVersionRoutes from "./src/routes/blog-version.routes.js";
+import publicBlogRoutes from "./src/routes/public-blog.routes.js";
 
 const app = express();
 
@@ -43,5 +44,6 @@ app.use("/api/repositories", repositoryRoutes);
 app.use("/api/repositories", memberRoutes);
 app.use("/api/repositories", blogRoutes);
 app.use("/api/repositories", blogVersionRoutes);
+app.use("/api/public", publicBlogRoutes);
 
 export default app;
