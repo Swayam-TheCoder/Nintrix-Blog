@@ -1,8 +1,6 @@
 import { api } from "@/lib/api";
 
-export type RepositoryVisibility =
-  | "PUBLIC"
-  | "PRIVATE";
+export type RepositoryVisibility = "PUBLIC" | "PRIVATE";
 
 export interface Repository {
   id: string;
@@ -23,52 +21,34 @@ export interface CreateRepositoryData {
 }
 
 export const getMyRepositories = async () => {
-  const response = await api.get(
-    "/repositories"
-  );
+  const response = await api.get("/repositories");
 
   return response.data;
 };
 
-export const getRepository = async (
-  repositoryId: string
-) => {
-  const response = await api.get(
-    `/repositories/${repositoryId}`
-  );
+export const getRepository = async (repositoryId: string) => {
+  const response = await api.get(`/repositories/${repositoryId}`);
 
-  return response.data;
+  return response.data.repository;
 };
 
-export const createRepository = async (
-  data: CreateRepositoryData
-) => {
-  const response = await api.post(
-    "/repositories",
-    data
-  );
+export const createRepository = async (data: CreateRepositoryData) => {
+  const response = await api.post("/repositories", data);
 
   return response.data;
 };
 
 export const updateRepository = async (
   repositoryId: string,
-  data: Partial<CreateRepositoryData>
+  data: Partial<CreateRepositoryData>,
 ) => {
-  const response = await api.patch(
-    `/repositories/${repositoryId}`,
-    data
-  );
+  const response = await api.patch(`/repositories/${repositoryId}`, data);
 
   return response.data;
 };
 
-export const deleteRepository = async (
-  repositoryId: string
-) => {
-  const response = await api.delete(
-    `/repositories/${repositoryId}`
-  );
+export const deleteRepository = async (repositoryId: string) => {
+  const response = await api.delete(`/repositories/${repositoryId}`);
 
   return response.data;
 };

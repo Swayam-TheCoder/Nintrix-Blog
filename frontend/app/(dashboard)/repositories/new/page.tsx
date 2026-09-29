@@ -3,17 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  FolderGit2,
-  Globe2,
-  Lock,
-  Sparkles,
-} from "lucide-react";
+import { ArrowLeft, FolderGit2, Globe2, Lock, Sparkles } from "lucide-react";
 
-import {
-  createRepository,
-} from "@/services/repository.service";
+import { createRepository } from "@/services/repository.service";
 
 export default function NewRepositoryPage() {
   const router = useRouter();
@@ -21,9 +13,7 @@ export default function NewRepositoryPage() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
-  const [visibility, setVisibility] = useState<
-    "PUBLIC" | "PRIVATE"
-  >("PRIVATE");
+  const [visibility, setVisibility] = useState<"PUBLIC" | "PRIVATE">("PRIVATE");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -36,9 +26,7 @@ export default function NewRepositoryPage() {
       .replace(/^-+|-+$/g, "");
   };
 
-  const handleNameChange = (
-    value: string
-  ) => {
+  const handleNameChange = (value: string) => {
     setName(value);
 
     // Automatically generate slug only while
@@ -48,9 +36,7 @@ export default function NewRepositoryPage() {
     }
   };
 
-  const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setError("");
@@ -68,30 +54,23 @@ export default function NewRepositoryPage() {
     setLoading(true);
 
     try {
-      const response =
-        await createRepository({
-          name: name.trim(),
-          slug: slug.trim(),
-          description:
-            description.trim() || undefined,
-          visibility,
-        });
+      const response = await createRepository({
+        name: name.trim(),
+        slug: slug.trim(),
+        description: description.trim() || undefined,
+        visibility,
+      });
 
-      const repository = response.data;
+      const repository = response.repository;
 
-      router.push(
-        `/repositories/${repository.id}`
-      );
+      router.push(`/repositories/${repository.id}`);
     } catch (error: any) {
-      console.error(
-        "Create repository error:",
-        error
-      );
+      console.error("Create repository error:", error);
 
       setError(
         error?.response?.data?.message ||
           error?.message ||
-          "Failed to create repository."
+          "Failed to create repository.",
       );
     } finally {
       setLoading(false);
@@ -123,23 +102,17 @@ export default function NewRepositoryPage() {
           </h1>
 
           <p className="mt-2 max-w-xl text-sm leading-6 text-white/40">
-            A repository is your workspace for
-            organizing blogs, collaborators and
-            future versions of your content.
+            A repository is your workspace for organizing blogs, collaborators
+            and future versions of your content.
           </p>
         </div>
 
         {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-8"
-        >
+        <form onSubmit={handleSubmit} className="space-y-8">
           {/* Basic information */}
           <section className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
             <div className="mb-6">
-              <h2 className="font-medium">
-                Repository details
-              </h2>
+              <h2 className="font-medium">Repository details</h2>
 
               <p className="mt-1 text-xs text-white/35">
                 Give your workspace an identity.
@@ -149,32 +122,22 @@ export default function NewRepositoryPage() {
             <div className="space-y-5">
               {/* Name */}
               <div>
-                <label className="mb-2 block text-sm text-white/70">
-                  Name
-                </label>
+                <label className="mb-2 block text-sm text-white/70">Name</label>
 
                 <input
                   value={name}
-                  onChange={(e) =>
-                    handleNameChange(
-                      e.target.value
-                    )
-                  }
+                  onChange={(e) => handleNameChange(e.target.value)}
                   placeholder="My Tech Blog"
                   maxLength={100}
                   className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/25"
                 />
 
-                <p className="mt-2 text-xs text-white/25">
-                  {name.length}/100
-                </p>
+                <p className="mt-2 text-xs text-white/25">{name.length}/100</p>
               </div>
 
               {/* Slug */}
               <div>
-                <label className="mb-2 block text-sm text-white/70">
-                  Slug
-                </label>
+                <label className="mb-2 block text-sm text-white/70">Slug</label>
 
                 <div className="flex items-center rounded-xl border border-white/10 bg-black/20 focus-within:border-white/25">
                   <span className="pl-4 text-sm text-white/25">
@@ -183,13 +146,7 @@ export default function NewRepositoryPage() {
 
                   <input
                     value={slug}
-                    onChange={(e) =>
-                      setSlug(
-                        generateSlug(
-                          e.target.value
-                        )
-                      )
-                    }
+                    onChange={(e) => setSlug(generateSlug(e.target.value))}
                     placeholder="my-tech-blog"
                     maxLength={100}
                     className="min-w-0 flex-1 bg-transparent px-2 py-3 text-sm text-white outline-none placeholder:text-white/20"
@@ -197,8 +154,7 @@ export default function NewRepositoryPage() {
                 </div>
 
                 <p className="mt-2 text-xs text-white/25">
-                  Lowercase letters, numbers and
-                  hyphens only.
+                  Lowercase letters, numbers and hyphens only.
                 </p>
               </div>
 
@@ -206,18 +162,12 @@ export default function NewRepositoryPage() {
               <div>
                 <label className="mb-2 block text-sm text-white/70">
                   Description
-                  <span className="ml-2 text-white/25">
-                    Optional
-                  </span>
+                  <span className="ml-2 text-white/25">Optional</span>
                 </label>
 
                 <textarea
                   value={description}
-                  onChange={(e) =>
-                    setDescription(
-                      e.target.value
-                    )
-                  }
+                  onChange={(e) => setDescription(e.target.value)}
                   placeholder="A place where I publish my thoughts about technology..."
                   rows={4}
                   maxLength={1000}
@@ -234,55 +184,39 @@ export default function NewRepositoryPage() {
           {/* Visibility */}
           <section className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
             <div className="mb-6">
-              <h2 className="font-medium">
-                Visibility
-              </h2>
+              <h2 className="font-medium">Visibility</h2>
 
               <p className="mt-1 text-xs text-white/35">
-                Choose who can access this
-                repository.
+                Choose who can access this repository.
               </p>
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
               <VisibilityOption
-                selected={
-                  visibility === "PRIVATE"
-                }
+                selected={visibility === "PRIVATE"}
                 icon={<Lock size={19} />}
                 title="Private"
                 description="Only you and invited collaborators can access it."
-                onClick={() =>
-                  setVisibility("PRIVATE")
-                }
+                onClick={() => setVisibility("PRIVATE")}
               />
 
               <VisibilityOption
-                selected={
-                  visibility === "PUBLIC"
-                }
+                selected={visibility === "PUBLIC"}
                 icon={<Globe2 size={19} />}
                 title="Public"
                 description="Anyone can view published blogs in this repository."
-                onClick={() =>
-                  setVisibility("PUBLIC")
-                }
+                onClick={() => setVisibility("PUBLIC")}
               />
             </div>
           </section>
 
           {/* Info */}
           <div className="flex gap-3 rounded-2xl border border-violet-500/10 bg-violet-500/5 p-4">
-            <Sparkles
-              size={18}
-              className="mt-0.5 shrink-0 text-violet-300"
-            />
+            <Sparkles size={18} className="mt-0.5 shrink-0 text-violet-300" />
 
             <p className="text-xs leading-5 text-white/40">
-              You can change repository visibility
-              later. Public repositories only expose
-              published blogs through the public
-              reading experience.
+              You can change repository visibility later. Public repositories
+              only expose published blogs through the public reading experience.
             </p>
           </div>
 
@@ -307,9 +241,7 @@ export default function NewRepositoryPage() {
               disabled={loading}
               className="rounded-xl bg-white px-6 py-2.5 text-sm font-medium text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {loading
-                ? "Creating..."
-                : "Create Repository"}
+              {loading ? "Creating..." : "Create Repository"}
             </button>
           </div>
         </form>
@@ -351,13 +283,9 @@ function VisibilityOption({
         {icon}
       </div>
 
-      <h3 className="text-sm font-medium">
-        {title}
-      </h3>
+      <h3 className="text-sm font-medium">{title}</h3>
 
-      <p className="mt-1 text-xs leading-5 text-white/35">
-        {description}
-      </p>
+      <p className="mt-1 text-xs leading-5 text-white/35">{description}</p>
     </button>
   );
 }
