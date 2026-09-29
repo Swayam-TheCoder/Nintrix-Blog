@@ -60,7 +60,7 @@ export default function Home() {
             </div>
 
             <span className="text-lg font-semibold tracking-tight">
-              BlogForge
+              NintrixBlog
             </span>
           </Link>
 
@@ -319,7 +319,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-white/[0.06] py-8">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 text-sm text-zinc-600 sm:flex-row">
-          <span>© 2026 BlogForge</span>
+          <span>© 2026 NintrixBlog</span>
 
           <div className="flex gap-6">
             <span>Privacy</span>

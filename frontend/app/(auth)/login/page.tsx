@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
+import { loginUser, loginWithGoogle } from "@/services/auth.service";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -13,10 +14,35 @@ export default function LoginPage() {
 
     setLoading(true);
 
-    // Backend integration comes next.
-    setTimeout(() => {
+    try {
+      const formData = new FormData(e.currentTarget);
+
+      const email = formData.get("email") as string;
+      const password = formData.get("password") as string;
+
+      await loginUser({
+        email,
+        password,
+      });
+
+      window.location.href = "/dashboard";
+    } catch (error: any) {
+      console.error(error);
+
+      alert(error?.message || "Login failed");
+    } finally {
       setLoading(false);
-    }, 800);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      await loginWithGoogle();
+    } catch (error: any) {
+      console.error(error);
+
+      alert(error?.message || "Google login failed");
+    }
   };
 
   return (
@@ -34,11 +60,10 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="mb-2 block text-sm text-zinc-300">
-              Email
-            </label>
+            <label className="mb-2 block text-sm text-zinc-300">Email</label>
 
             <input
+              name="email"
               type="email"
               placeholder="you@example.com"
               required
@@ -48,9 +73,7 @@ export default function LoginPage() {
 
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <label className="text-sm text-zinc-300">
-                Password
-              </label>
+              <label className="text-sm text-zinc-300">Password</label>
 
               <Link
                 href="/forgot-password"
@@ -62,6 +85,7 @@ export default function LoginPage() {
 
             <div className="relative">
               <input
+                name="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 required
@@ -73,11 +97,7 @@ export default function LoginPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-300"
               >
-                {showPassword ? (
-                  <EyeOff size={17} />
-                ) : (
-                  <Eye size={17} />
-                )}
+                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
             </div>
           </div>
@@ -106,6 +126,7 @@ export default function LoginPage() {
         <button
           type="button"
           className="flex h-11 w-full items-center justify-center gap-3 rounded-lg border border-white/[0.08] bg-white/[0.02] text-sm font-medium text-zinc-300 transition hover:bg-white/[0.05]"
+          onClick={handleGoogleLogin}
         >
           Continue with Google
         </button>

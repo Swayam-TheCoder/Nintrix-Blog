@@ -8,16 +8,48 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (
+  e: React.FormEvent<HTMLFormElement>
+) => {
+  e.preventDefault();
 
-    setLoading(true);
+  setLoading(true);
 
-    // Backend integration comes next.
-    setTimeout(() => {
-      setLoading(false);
-    }, 800);
-  };
+  try {
+    const formData = new FormData(e.currentTarget);
+
+    const name = formData.get("name") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    const { signupUser } = await import(
+      "@/services/auth.service"
+    );
+
+    await signupUser({
+      name,
+      email,
+      password,
+    });
+
+    alert(
+      "Account created. Please check your email to verify your account."
+    );
+
+    window.location.href = "/login";
+
+  } catch (error: any) {
+    console.error(error);
+
+    alert(
+      error?.response?.data?.message ||
+        "Signup failed"
+    );
+
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="w-full max-w-md">
@@ -39,6 +71,7 @@ export default function SignupPage() {
             </label>
 
             <input
+              name="name"
               type="text"
               placeholder="Your name"
               required
@@ -52,6 +85,7 @@ export default function SignupPage() {
             </label>
 
             <input
+              name="email"
               type="email"
               placeholder="you@example.com"
               required
@@ -66,6 +100,7 @@ export default function SignupPage() {
 
             <div className="relative">
               <input
+                name="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Minimum 8 characters"
                 minLength={8}
