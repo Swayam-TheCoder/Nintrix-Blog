@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import {
   ArrowRight,
@@ -13,13 +14,45 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "@/components/auth/AuthProvider";
+import {
+  getMyRepositories,
+  type Repository,
+} from "@/services/repository.service";
 
 export default function DashboardPage() {
   const { user } = useAuth();
 
+  const [repositories, setRepositories] =
+    useState<Repository[]>([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
   const firstName =
     user?.user_metadata?.full_name?.split(" ")[0] ||
     "Creator";
+
+  useEffect(() => {
+    const loadRepositories = async () => {
+      try {
+        const response =
+          await getMyRepositories();
+
+        setRepositories(
+          response.data || []
+        );
+      } catch (error) {
+        console.error(
+          "Failed to load repositories:",
+          error
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadRepositories();
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -70,7 +103,7 @@ export default function DashboardPage() {
               href="/repositories/new"
               className="mt-6 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-2.5 text-sm font-medium text-black transition hover:bg-white/90"
             >
-              Create your first repository
+              Create a repository
               <ArrowRight size={16} />
             </Link>
           </div>
@@ -81,7 +114,7 @@ export default function DashboardPage() {
           <StatCard
             icon={<FolderGit2 size={19} />}
             label="Repositories"
-            value="0"
+            value={repositories.length.toString()}
           />
 
           <StatCard
@@ -97,7 +130,7 @@ export default function DashboardPage() {
           />
         </section>
 
-        {/* Recent */}
+        {/* Repositories */}
         <section>
           <div className="mb-4 flex items-center justify-between">
             <div>
@@ -112,39 +145,99 @@ export default function DashboardPage() {
 
             <Link
               href="/repositories"
-              className="text-sm text-white/50 transition hover:text-white"
+              className="flex items-center gap-1 text-sm text-white/50 transition hover:text-white"
             >
               View all
+              <ArrowRight size={14} />
             </Link>
           </div>
 
-          <div className="rounded-2xl border border-dashed border-white/10 p-12 text-center">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5">
-              <BookOpen
-                size={21}
-                className="text-white/40"
-              />
+          {loading ? (
+            <div className="rounded-2xl border border-white/10 p-10 text-center text-sm text-white/40">
+              Loading repositories...
             </div>
-
-            <h3 className="mt-4 font-medium">
-              No repositories yet
-            </h3>
-
-            <p className="mx-auto mt-2 max-w-sm text-sm text-white/40">
-              Create a repository and start writing your
-              first blog.
-            </p>
-
-            <Link
-              href="/repositories/new"
-              className="mt-5 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm transition hover:bg-white/10"
-            >
-              <Plus size={16} />
-              Create repository
-            </Link>
-          </div>
+          ) : repositories.length === 0 ? (
+            <EmptyRepositories />
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2">
+              {repositories
+                .slice(0, 4)
+                .map((repository) => (
+                  <RepositoryCard
+                    key={repository.id}
+                    repository={repository}
+                  />
+                ))}
+            </div>
+          )}
         </section>
       </div>
+    </div>
+  );
+}
+
+function RepositoryCard({
+  repository,
+}: {
+  repository: Repository;
+}) {
+  return (
+    <Link
+      href={`/repositories/${repository.id}`}
+      className="group rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition hover:border-white/20 hover:bg-white/[0.04]"
+    >
+      <div className="flex items-start justify-between">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10 text-violet-300">
+          <FolderGit2 size={19} />
+        </div>
+
+        <span className="rounded-full border border-white/10 px-2.5 py-1 text-[11px] text-white/40">
+          {repository.visibility}
+        </span>
+      </div>
+
+      <h3 className="mt-5 font-medium group-hover:text-white">
+        {repository.name}
+      </h3>
+
+      <p className="mt-1 text-xs text-white/35">
+        {repository.slug}
+      </p>
+
+      {repository.description && (
+        <p className="mt-3 line-clamp-2 text-sm leading-5 text-white/40">
+          {repository.description}
+        </p>
+      )}
+    </Link>
+  );
+}
+
+function EmptyRepositories() {
+  return (
+    <div className="rounded-2xl border border-dashed border-white/10 p-12 text-center">
+      <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5">
+        <BookOpen
+          size={21}
+          className="text-white/40"
+        />
+      </div>
+
+      <h3 className="mt-4 font-medium">
+        No repositories yet
+      </h3>
+
+      <p className="mx-auto mt-2 max-w-sm text-sm text-white/40">
+        Create your first repository and start writing.
+      </p>
+
+      <Link
+        href="/repositories/new"
+        className="mt-5 inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm transition hover:bg-white/10"
+      >
+        <Plus size={16} />
+        Create repository
+      </Link>
     </div>
   );
 }
