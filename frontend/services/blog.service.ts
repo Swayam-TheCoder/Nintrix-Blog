@@ -1,11 +1,6 @@
 import { api } from "@/lib/api";
 
-
-
-export type BlogStatus =
-  | "DRAFT"
-  | "PUBLISHED"
-  | "ARCHIVED";
+export type BlogStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 
 export interface Blog {
   id: string;
@@ -28,58 +23,45 @@ export interface CreateBlogData {
   excerpt?: string;
 }
 
-export const getRepositoryBlogs = async (
-  repositoryId: string
-) => {
-  const response = await api.get(
-    `/repositories/${repositoryId}/blogs`
-  );
+export const getRepositoryBlogs = async (repositoryId: string) => {
+  const response = await api.get(`/repositories/${repositoryId}/blogs`);
 
   return response.data.blogs;
 };
 
-export const getBlog = async (
-  repositoryId: string,
-  blogId: string
-) => {
+export const getBlog = async (repositoryId: string, blogId: string) => {
   const response = await api.get(
-    `/repositories/${repositoryId}/blogs/${blogId}`
+    `/repositories/${repositoryId}/blogs/${blogId}`,
   );
 
-  return response.data;
+  return response.data.blog;
 };
 
 export const createBlog = async (
   repositoryId: string,
-  data: CreateBlogData
+  data: CreateBlogData,
 ) => {
-  const response = await api.post(
-    `/repositories/${repositoryId}/blogs`,
-    data
-  );
+  const response = await api.post(`/repositories/${repositoryId}/blogs`, data);
 
-  return response.data;
+  return response.data.blog;
 };
 
 export const updateBlog = async (
   repositoryId: string,
   blogId: string,
-  data: Partial<CreateBlogData>
+  data: Partial<CreateBlogData>,
 ) => {
   const response = await api.patch(
     `/repositories/${repositoryId}/blogs/${blogId}`,
-    data
+    data,
   );
 
-  return response.data;
+  return response.data.blog;
 };
 
-export const deleteBlog = async (
-  repositoryId: string,
-  blogId: string
-) => {
+export const deleteBlog = async (repositoryId: string, blogId: string) => {
   const response = await api.delete(
-    `/repositories/${repositoryId}/blogs/${blogId}`
+    `/repositories/${repositoryId}/blogs/${blogId}`,
   );
 
   return response.data;
@@ -88,12 +70,12 @@ export const deleteBlog = async (
 export const changeBlogStatus = async (
   repositoryId: string,
   blogId: string,
-  status: "PUBLISHED" | "DRAFT"
+  status: "PUBLISHED" | "DRAFT",
 ) => {
   const response = await api.patch(
     `/repositories/${repositoryId}/blogs/${blogId}/status`,
-    { status }
+    { status },
   );
 
-  return response.data;
+  return response.data.blog;
 };

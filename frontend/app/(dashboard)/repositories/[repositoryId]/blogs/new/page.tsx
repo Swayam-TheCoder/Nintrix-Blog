@@ -4,33 +4,24 @@ import Link from "next/link";
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
-import {
-  ArrowLeft,
-  FileText,
-  Save,
-} from "lucide-react";
+import { ArrowLeft, FileText, Save } from "lucide-react";
 
-import {
-  createBlog,
-} from "@/services/blog.service";
+import { createBlog } from "@/services/blog.service";
 
 export default function NewBlogPage() {
   const params = useParams();
   const router = useRouter();
 
-  const repositoryId =
-    params.repositoryId as string;
+  const repositoryId = params.repositoryId as string;
 
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
 
-  const [loading, setLoading] =
-    useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const [error, setError] =
-    useState("");
+  const [error, setError] = useState("");
 
   const generateSlug = (value: string) => {
     return value
@@ -40,22 +31,15 @@ export default function NewBlogPage() {
       .replace(/^-+|-+$/g, "");
   };
 
-  const handleTitleChange = (
-    value: string
-  ) => {
+  const handleTitleChange = (value: string) => {
     setTitle(value);
 
-    if (
-      !slug ||
-      slug === generateSlug(title)
-    ) {
+    if (!slug || slug === generateSlug(title)) {
       setSlug(generateSlug(value));
     }
   };
 
-  const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     setError("");
@@ -78,32 +62,21 @@ export default function NewBlogPage() {
     setLoading(true);
 
     try {
-      const response = await createBlog(
-        repositoryId,
-        {
-          title: title.trim(),
-          slug: slug.trim(),
-          excerpt:
-            excerpt.trim() || undefined,
-          content,
-        }
-      );
+      const blog = await createBlog(repositoryId, {
+        title,
+        slug,
+        excerpt,
+        content,
+      });
 
-      const blog = response.data;
-
-      router.push(
-        `/repositories/${repositoryId}/blogs/${blog.id}`
-      );
+      router.push(`/repositories/${repositoryId}/blogs/${blog.id}`);
     } catch (error: any) {
-      console.error(
-        "Create blog error:",
-        error
-      );
+      console.error("Create blog error:", error);
 
       setError(
         error?.response?.data?.message ||
           error?.message ||
-          "Failed to create blog."
+          "Failed to create blog.",
       );
     } finally {
       setLoading(false);
@@ -135,47 +108,29 @@ export default function NewBlogPage() {
           </h1>
 
           <p className="mt-2 text-sm text-white/40">
-            Start with a draft. You can publish it
-            whenever you're ready.
+            Start with a draft. You can publish it whenever you're ready.
           </p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6"
-        >
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Title */}
           <section className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-            <label className="mb-2 block text-sm text-white/70">
-              Title
-            </label>
+            <label className="mb-2 block text-sm text-white/70">Title</label>
 
             <input
               value={title}
-              onChange={(e) =>
-                handleTitleChange(
-                  e.target.value
-                )
-              }
+              onChange={(e) => handleTitleChange(e.target.value)}
               placeholder="How I Built My First SaaS"
               maxLength={200}
               className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-lg text-white outline-none placeholder:text-white/20 focus:border-white/25"
             />
 
             <div className="mt-4">
-              <label className="mb-2 block text-xs text-white/40">
-                Slug
-              </label>
+              <label className="mb-2 block text-xs text-white/40">Slug</label>
 
               <input
                 value={slug}
-                onChange={(e) =>
-                  setSlug(
-                    generateSlug(
-                      e.target.value
-                    )
-                  )
-                }
+                onChange={(e) => setSlug(generateSlug(e.target.value))}
                 placeholder="how-i-built-my-first-saas"
                 maxLength={200}
                 className="w-full rounded-xl border border-white/10 bg-black/20 px-4 py-2.5 text-sm text-white outline-none placeholder:text-white/20 focus:border-white/25"
@@ -187,16 +142,12 @@ export default function NewBlogPage() {
           <section className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
             <label className="mb-2 block text-sm text-white/70">
               Excerpt
-              <span className="ml-2 text-xs text-white/25">
-                Optional
-              </span>
+              <span className="ml-2 text-xs text-white/25">Optional</span>
             </label>
 
             <textarea
               value={excerpt}
-              onChange={(e) =>
-                setExcerpt(e.target.value)
-              }
+              onChange={(e) => setExcerpt(e.target.value)}
               placeholder="A short introduction that will appear in blog listings..."
               maxLength={500}
               rows={3}
@@ -211,16 +162,12 @@ export default function NewBlogPage() {
           {/* Content */}
           <section className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02]">
             <div className="border-b border-white/10 px-6 py-4">
-              <label className="text-sm text-white/70">
-                Content
-              </label>
+              <label className="text-sm text-white/70">Content</label>
             </div>
 
             <textarea
               value={content}
-              onChange={(e) =>
-                setContent(e.target.value)
-              }
+              onChange={(e) => setContent(e.target.value)}
               placeholder="Start writing your story..."
               className="min-h-[500px] w-full resize-y bg-transparent px-6 py-5 text-[15px] leading-7 text-white outline-none placeholder:text-white/20"
             />
@@ -253,9 +200,7 @@ export default function NewBlogPage() {
             >
               <Save size={16} />
 
-              {loading
-                ? "Saving..."
-                : "Save Draft"}
+              {loading ? "Saving..." : "Save Draft"}
             </button>
           </div>
         </form>
