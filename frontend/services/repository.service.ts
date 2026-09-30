@@ -22,8 +22,7 @@ export interface CreateRepositoryData {
 
 export const getMyRepositories = async () => {
   const response = await api.get("/repositories");
-
-  return response.data;
+  return response.data.repositories;
 };
 
 export const getRepository = async (repositoryId: string) => {
@@ -35,7 +34,7 @@ export const getRepository = async (repositoryId: string) => {
 export const createRepository = async (data: CreateRepositoryData) => {
   const response = await api.post("/repositories", data);
 
-  return response.data;
+  return response.data.repository;
 };
 
 export const updateRepository = async (

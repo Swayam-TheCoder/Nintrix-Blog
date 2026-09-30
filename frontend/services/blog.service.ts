@@ -79,3 +79,14 @@ export const changeBlogStatus = async (
 
   return response.data.blog;
 };
+
+export const archiveBlog = async (
+  repositoryId: string,
+  blogId: string
+) => {
+  const response = await api.patch(
+    `/repositories/${repositoryId}/blogs/${blogId}/archive`
+  );
+
+  return response.data.blog;
+};

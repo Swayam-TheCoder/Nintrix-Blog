@@ -20,9 +20,8 @@ export default function RepositoriesPage() {
   useEffect(() => {
     const loadRepositories = async () => {
       try {
-        const response = await getMyRepositories();
-
-        setRepositories(response.data || []);
+        const repositories = await getMyRepositories();
+        setRepositories(repositories || []);
       } catch (error) {
         console.error(error);
       } finally {
