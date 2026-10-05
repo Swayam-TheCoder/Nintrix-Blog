@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { getRepositoryBlogs } from "@/services/blog.service";
 
 import {
   ArrowRight,
@@ -22,30 +23,22 @@ import {
 export default function DashboardPage() {
   const { user } = useAuth();
 
-  const [repositories, setRepositories] =
-    useState<Repository[]>([]);
+  const [repositories, setRepositories] = useState<Repository[]>([]);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const firstName =
-    user?.user_metadata?.full_name?.split(" ")[0] ||
-    "Creator";
+  const [blogCount, setBlogCount] = useState(0);
+
+  const firstName = user?.user_metadata?.full_name?.split(" ")[0] || "Creator";
 
   useEffect(() => {
     const loadRepositories = async () => {
       try {
-        const response =
-          await getMyRepositories();
+        const repositories = await getMyRepositories();
 
-        setRepositories(
-          response.data || []
-        );
+        setRepositories(repositories || []);
       } catch (error) {
-        console.error(
-          "Failed to load repositories:",
-          error
-        );
+        console.error("Failed to load repositories:", error);
       } finally {
         setLoading(false);
       }
@@ -54,15 +47,41 @@ export default function DashboardPage() {
     loadRepositories();
   }, []);
 
+  useEffect(() => {
+  const loadDashboard = async () => {
+    try {
+      const repositories = await getMyRepositories();
+
+      setRepositories(repositories || []);
+
+      let totalBlogs = 0;
+
+      for (const repository of repositories || []) {
+        const blogs = await getRepositoryBlogs(repository.id);
+        totalBlogs += blogs.length;
+      }
+
+      setBlogCount(totalBlogs);
+    } catch (error) {
+      console.error(
+        "Failed to load dashboard:",
+        error
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadDashboard();
+}, []); 
+
   return (
     <div className="min-h-screen">
       {/* Header */}
       <header className="border-b border-white/10 px-8 py-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="mb-1 text-sm text-white/40">
-              Workspace
-            </p>
+            <p className="mb-1 text-sm text-white/40">Workspace</p>
 
             <h1 className="text-2xl font-semibold tracking-tight">
               Welcome back, {firstName}
@@ -94,9 +113,8 @@ export default function DashboardPage() {
             </h2>
 
             <p className="mt-3 max-w-xl text-sm leading-6 text-white/50">
-              Create repositories, write blogs, invite
-              collaborators and build something worth
-              publishing.
+              Create repositories, write blogs, invite collaborators and build
+              something worth publishing.
             </p>
 
             <Link
@@ -120,7 +138,7 @@ export default function DashboardPage() {
           <StatCard
             icon={<FileText size={19} />}
             label="Blog posts"
-            value="0"
+            value={blogCount.toString()}
           />
 
           <StatCard
@@ -134,9 +152,7 @@ export default function DashboardPage() {
         <section>
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h2 className="font-semibold">
-                Recent repositories
-              </h2>
+              <h2 className="font-semibold">Recent repositories</h2>
 
               <p className="mt-1 text-sm text-white/40">
                 Your latest workspaces
@@ -160,14 +176,9 @@ export default function DashboardPage() {
             <EmptyRepositories />
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
-              {repositories
-                .slice(0, 4)
-                .map((repository) => (
-                  <RepositoryCard
-                    key={repository.id}
-                    repository={repository}
-                  />
-                ))}
+              {repositories.slice(0, 4).map((repository) => (
+                <RepositoryCard key={repository.id} repository={repository} />
+              ))}
             </div>
           )}
         </section>
@@ -176,11 +187,7 @@ export default function DashboardPage() {
   );
 }
 
-function RepositoryCard({
-  repository,
-}: {
-  repository: Repository;
-}) {
+function RepositoryCard({ repository }: { repository: Repository }) {
   return (
     <Link
       href={`/repositories/${repository.id}`}
@@ -200,9 +207,7 @@ function RepositoryCard({
         {repository.name}
       </h3>
 
-      <p className="mt-1 text-xs text-white/35">
-        {repository.slug}
-      </p>
+      <p className="mt-1 text-xs text-white/35">{repository.slug}</p>
 
       {repository.description && (
         <p className="mt-3 line-clamp-2 text-sm leading-5 text-white/40">
@@ -217,15 +222,10 @@ function EmptyRepositories() {
   return (
     <div className="rounded-2xl border border-dashed border-white/10 p-12 text-center">
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5">
-        <BookOpen
-          size={21}
-          className="text-white/40"
-        />
+        <BookOpen size={21} className="text-white/40" />
       </div>
 
-      <h3 className="mt-4 font-medium">
-        No repositories yet
-      </h3>
+      <h3 className="mt-4 font-medium">No repositories yet</h3>
 
       <p className="mx-auto mt-2 max-w-sm text-sm text-white/40">
         Create your first repository and start writing.
@@ -257,13 +257,9 @@ function StatCard({
         {icon}
       </div>
 
-      <p className="text-sm text-white/40">
-        {label}
-      </p>
+      <p className="text-sm text-white/40">{label}</p>
 
-      <p className="mt-1 text-2xl font-semibold">
-        {value}
-      </p>
+      <p className="mt-1 text-2xl font-semibold">{value}</p>
     </div>
   );
 }
