@@ -25,3 +25,15 @@ export const getBlogVersions = async (
 
   return response.data.versions;
 };
+
+export const restoreBlogVersion = async (
+  repositoryId: string,
+  blogId: string,
+  versionId: string
+) => {
+  const response = await api.post(
+    `/repositories/${repositoryId}/blogs/${blogId}/versions/${versionId}/restore`
+  );
+
+  return response.data;
+};

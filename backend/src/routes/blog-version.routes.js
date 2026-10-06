@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { getVersions } from "../controllers/blog-version.controller.js";
+import { getVersions, restoreVersion } from "../controllers/blog-version.controller.js";
 
 import { requireAuth } from "../middleware/auth.middleware.js";
 
@@ -15,6 +15,13 @@ router.get(
   requireAuth,
   requireRepositoryAccess,
   getVersions
+);
+
+router.post(
+  "/:repositoryId/blogs/:blogId/versions/:versionId/restore",
+  requireAuth,
+  requireRepositoryAccess,
+  restoreVersion
 );
 
 export default router;

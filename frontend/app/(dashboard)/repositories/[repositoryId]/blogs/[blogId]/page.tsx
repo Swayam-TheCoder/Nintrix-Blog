@@ -25,6 +25,7 @@ import {
 
 import {
   getBlogVersions,
+  restoreBlogVersion,
   type BlogVersion,
 } from "@/services/blog-version.service";
 
@@ -77,52 +78,49 @@ export default function BlogEditorPage() {
   };
 
   useEffect(() => {
-  const loadBlog = async () => {
-    try {
-      setLoading(true);
-      setError("");
+    const loadBlog = async () => {
+      try {
+        setLoading(true);
+        setError("");
 
-      const data = await getBlog(repositoryId, blogId);
+        const data = await getBlog(repositoryId, blogId);
 
-      setBlog(data);
-      setTitle(data.title);
-      setSlug(data.slug);
-      setExcerpt(data.excerpt || "");
-      setContent(data.content || "");
+        setBlog(data);
+        setTitle(data.title);
+        setSlug(data.slug);
+        setExcerpt(data.excerpt || "");
+        setContent(data.content || "");
 
-      if (data.status === "PUBLISHED") {
-        setVersionsLoading(true);
+        if (data.status === "PUBLISHED") {
+          setVersionsLoading(true);
 
-        const versionData = await getBlogVersions(
-          repositoryId,
-          blogId
-        );
+          const versionData = await getBlogVersions(repositoryId, blogId);
 
-        setVersions(versionData);
+          setVersions(versionData);
 
-        if (versionData.length > 0) {
-          setSelectedVersion(versionData[0]);
+          if (versionData.length > 0) {
+            setSelectedVersion(versionData[0]);
+          }
+
+          setVersionsLoading(false);
         }
+      } catch (error: any) {
+        console.error("Load blog error:", error);
 
-        setVersionsLoading(false);
+        setError(
+          error?.response?.data?.message ||
+            error?.message ||
+            "Failed to load blog.",
+        );
+      } finally {
+        setLoading(false);
       }
-    } catch (error: any) {
-      console.error("Load blog error:", error);
+    };
 
-      setError(
-        error?.response?.data?.message ||
-          error?.message ||
-          "Failed to load blog."
-      );
-    } finally {
-      setLoading(false);
+    if (repositoryId && blogId) {
+      loadBlog();
     }
-  };
-
-  if (repositoryId && blogId) {
-    loadBlog();
-  }
-}, [repositoryId, blogId]);
+  }, [repositoryId, blogId]);
 
   const handleSave = async () => {
     if (!title.trim()) {
@@ -232,6 +230,53 @@ export default function BlogEditorPage() {
       );
     } finally {
       setPublishing(false);
+    }
+  };
+
+  const handleRestoreVersion = async () => {
+    if (!selectedVersion || !blog) return;
+
+    const confirmed = window.confirm(
+      `Restore Version ${selectedVersion.version_number}?`,
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setSaving(true);
+      setError("");
+      setSuccess("");
+
+      const result = await restoreBlogVersion(
+        repositoryId,
+        blogId,
+        selectedVersion.id,
+      );
+
+      const updatedBlog = result.blog;
+
+      setBlog(updatedBlog);
+      setTitle(updatedBlog.title);
+      setSlug(updatedBlog.slug);
+      setExcerpt(updatedBlog.excerpt || "");
+      setContent(updatedBlog.content || "");
+
+      const updatedVersions = await getBlogVersions(repositoryId, blogId);
+
+      setVersions(updatedVersions);
+      setSelectedVersion(updatedVersions[0] || null);
+
+      setSuccess("Version restored successfully.");
+    } catch (error: any) {
+      console.error("Restore version error:", error);
+
+      setError(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to restore version.",
+      );
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -470,115 +515,119 @@ export default function BlogEditorPage() {
         </div>
 
         {/* Version History */}
-{blog.status === "PUBLISHED" && (
-  <section className="mt-12 border-t border-white/10 pt-8">
-    <div className="mb-5">
-      <h2 className="text-lg font-semibold">
-        Version History
-      </h2>
+        {blog.status === "PUBLISHED" && (
+          <section className="mt-12 border-t border-white/10 pt-8">
+            <div className="mb-5">
+              <h2 className="text-lg font-semibold">Version History</h2>
 
-      <p className="mt-1 text-sm text-white/40">
-        Previous published versions of this blog
-      </p>
-    </div>
+              <p className="mt-1 text-sm text-white/40">
+                Previous published versions of this blog
+              </p>
+            </div>
 
-    {versionsLoading ? (
-      <div className="flex items-center gap-2 text-sm text-white/40">
-        <Loader2 size={16} className="animate-spin" />
-        Loading versions...
-      </div>
-    ) : versions.length === 0 ? (
-      <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-        <p className="text-sm text-white/40">
-          No versions available yet.
-        </p>
-      </div>
-    ) : (
-      <div className="space-y-3">
-        {versions.map((version) => {
-          const isSelected =
-            selectedVersion?.id === version.id;
+            {versionsLoading ? (
+              <div className="flex items-center gap-2 text-sm text-white/40">
+                <Loader2 size={16} className="animate-spin" />
+                Loading versions...
+              </div>
+            ) : versions.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+                <p className="text-sm text-white/40">
+                  No versions available yet.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {versions.map((version) => {
+                  const isSelected = selectedVersion?.id === version.id;
 
-          return (
-            <button
-              key={version.id}
-              type="button"
-              onClick={() => setSelectedVersion(version)}
-              className={`w-full rounded-2xl border p-5 text-left transition ${
-                isSelected
-                  ? "border-white/20 bg-white/[0.06]"
-                  : "border-white/10 bg-white/[0.02] hover:bg-white/[0.04]"
-              }`}
-            >
-              <div className="flex items-start justify-between gap-4">
+                  return (
+                    <button
+                      key={version.id}
+                      type="button"
+                      onClick={() => setSelectedVersion(version)}
+                      className={`w-full rounded-2xl border p-5 text-left transition ${
+                        isSelected
+                          ? "border-white/20 bg-white/[0.06]"
+                          : "border-white/10 bg-white/[0.02] hover:bg-white/[0.04]"
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <div className="flex items-center gap-3">
+                            <span className="font-medium">
+                              Version {version.version_number}
+                            </span>
+
+                            {version.version_number ===
+                              versions[0].version_number && (
+                              <span className="rounded-full bg-emerald-500/10 px-2 py-1 text-[10px] text-emerald-300">
+                                Latest
+                              </span>
+                            )}
+                          </div>
+
+                          <p className="mt-2 line-clamp-1 text-sm text-white/50">
+                            {version.title}
+                          </p>
+                        </div>
+
+                        <span className="shrink-0 text-xs text-white/30">
+                          {new Date(version.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+
+                      <div className="mt-3 text-xs text-white/35">
+                        {version.profiles?.display_name ||
+                          version.profiles?.username ||
+                          "Unknown author"}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
+
+        {selectedVersion && (
+          <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.02]">
+            <div className="border-b border-white/10 px-6 py-5">
+              <div className="flex items-center justify-between gap-4">
                 <div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-medium">
-                      Version {version.version_number}
-                    </span>
-
-                    {version.version_number ===
-                      versions[0].version_number && (
-                      <span className="rounded-full bg-emerald-500/10 px-2 py-1 text-[10px] text-emerald-300">
-                        Latest
-                      </span>
-                    )}
-                  </div>
-
-                  <p className="mt-2 line-clamp-1 text-sm text-white/50">
-                    {version.title}
+                  <p className="text-xs text-white/30">
+                    Version {selectedVersion.version_number}
                   </p>
+
+                  <h3 className="mt-1 text-lg font-semibold">
+                    {selectedVersion.title}
+                  </h3>
                 </div>
 
-                <span className="shrink-0 text-xs text-white/30">
-                  {new Date(
-                    version.created_at
-                  ).toLocaleDateString()}
+                <span className="text-xs text-white/30">
+                  {new Date(selectedVersion.created_at).toLocaleString()}
                 </span>
+
+                <div>
+                  <button
+                    type="button"
+                    onClick={handleRestoreVersion}
+                    disabled={!selectedVersion}
+                    className="rounded-xl bg-white px-4 py-2.5 text-sm font-medium text-black transition hover:bg-white/90 disabled:opacity-50"
+                  >
+                    Restore this version
+                  </button>
+                </div>
               </div>
+            </div>
 
-              <div className="mt-3 text-xs text-white/35">
-                {version.profiles?.display_name ||
-                  version.profiles?.username ||
-                  "Unknown author"}
+            <div className="px-6 py-6">
+              <div className="whitespace-pre-wrap text-sm leading-7 text-white/65">
+                {selectedVersion.content || "No content"}
               </div>
-            </button>
-          );
-        })}
-      </div>
-    )}
-  </section>
-)}
-
-{selectedVersion && (
-  <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.02]">
-    <div className="border-b border-white/10 px-6 py-5">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <p className="text-xs text-white/30">
-            Version {selectedVersion.version_number}
-          </p>
-
-          <h3 className="mt-1 text-lg font-semibold">
-            {selectedVersion.title}
-          </h3>
-        </div>
-
-        <span className="text-xs text-white/30">
-          {new Date(
-            selectedVersion.created_at
-          ).toLocaleString()}
-        </span>
-      </div>
-    </div>
-
-    <div className="px-6 py-6">
-      <div className="whitespace-pre-wrap text-sm leading-7 text-white/65">
-        {selectedVersion.content || "No content"}
-      </div>
-    </div>
-  </section>
-)}
+            </div>
+          </section>
+        )}
       </main>
     </div>
   );
