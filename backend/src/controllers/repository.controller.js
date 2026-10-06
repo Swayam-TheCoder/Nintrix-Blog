@@ -3,12 +3,12 @@ import {
   getMyRepositories,
   getRepositoryById,
   updateRepository,
-  deleteRepository
+  deleteRepository,
 } from "../services/repository.service.js";
 
 import {
   createRepositorySchema,
-  updateRepositorySchema
+  updateRepositorySchema,
 } from "../validators/repository.validator.js";
 
 export const create = async (req, res) => {
@@ -17,40 +17,42 @@ export const create = async (req, res) => {
 
     const repository = await createRepository({
       ownerId: req.user.id,
-      ...body
+      ...body,
     });
 
     return res.status(201).json({
       success: true,
       message: "Repository created successfully",
-      repository
+      repository,
     });
   } catch (error) {
     console.error("Create repository error:", error);
 
     return res.status(400).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
 
 export const getMine = async (req, res) => {
   try {
-    const repositories = await getMyRepositories(
-      req.user.id
-    );
+    const page = Math.max(Number(req.query.page) || 1, 1);
+
+    const limit = Math.min(Math.max(Number(req.query.limit) || 6, 1), 50);
+
+    const result = await getMyRepositories(req.user.id, page, limit);
 
     return res.status(200).json({
       success: true,
-      repositories
+      ...result,
     });
   } catch (error) {
     console.error("Get repositories error:", error);
 
     return res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -59,67 +61,62 @@ export const getOne = async (req, res) => {
   try {
     const repository = await getRepositoryById(
       req.params.repositoryId,
-      req.user.id
+      req.user.id,
     );
 
     return res.status(200).json({
       success: true,
-      repository
+      repository,
     });
   } catch (error) {
     console.error("Get repository error:", error);
 
     return res.status(404).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
 
 export const update = async (req, res) => {
   try {
-    const updates = updateRepositorySchema.parse(
-      req.body
-    );
+    const updates = updateRepositorySchema.parse(req.body);
 
     const repository = await updateRepository(
       req.params.repositoryId,
       req.user.id,
-      updates
+      updates,
     );
 
     return res.status(200).json({
       success: true,
       message: "Repository updated successfully",
-      repository
+      repository,
     });
   } catch (error) {
     console.error("Update repository error:", error);
 
     return res.status(400).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };
 
 export const remove = async (req, res) => {
   try {
-    await deleteRepository(
-      req.params.repositoryId,
-      req.user.id
-    );
+    await deleteRepository(req.params.repositoryId, req.user.id);
 
     return res.status(200).json({
       success: true,
-      message: "Repository deleted successfully"
+      message: "Repository deleted successfully",
     });
   } catch (error) {
     console.error("Delete repository error:", error);
 
     return res.status(400).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 };

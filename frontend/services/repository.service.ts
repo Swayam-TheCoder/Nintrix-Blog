@@ -19,11 +19,28 @@ export interface CreateRepositoryData {
   description?: string;
   visibility: RepositoryVisibility;
 }
+export interface RepositoryPagination {
+  repositories: Repository[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
 
-export const getMyRepositories = async () => {
-  const response = await api.get("/repositories");
-  return response.data.repositories;
+export const getMyRepositories = async (
+  page?: number,
+  limit?: number
+): Promise<RepositoryPagination> => {
+  const response = await api.get("/repositories", {
+    params: {
+      page,
+      limit,
+    },
+  });
+
+  return response.data;
 };
+
 
 export const getRepository = async (repositoryId: string) => {
   const response = await api.get(`/repositories/${repositoryId}`);

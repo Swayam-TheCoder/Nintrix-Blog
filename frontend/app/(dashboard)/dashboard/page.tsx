@@ -34,9 +34,9 @@ export default function DashboardPage() {
   useEffect(() => {
     const loadRepositories = async () => {
       try {
-        const repositories = await getMyRepositories();
+        const result = await getMyRepositories();
 
-        setRepositories(repositories || []);
+        setRepositories(result.repositories || []);
       } catch (error) {
         console.error("Failed to load repositories:", error);
       } finally {
@@ -48,32 +48,29 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-  const loadDashboard = async () => {
-    try {
-      const repositories = await getMyRepositories();
+    const loadDashboard = async () => {
+      try {
+        const result = await getMyRepositories();
 
-      setRepositories(repositories || []);
+        setRepositories(result.repositories);
 
-      let totalBlogs = 0;
+        let totalBlogs = 0;
 
-      for (const repository of repositories || []) {
-        const blogs = await getRepositoryBlogs(repository.id);
-        totalBlogs += blogs.length;
+        for (const repository of repositories || []) {
+          const blogs = await getRepositoryBlogs(repository.id);
+          totalBlogs += blogs.length;
+        }
+
+        setBlogCount(totalBlogs);
+      } catch (error) {
+        console.error("Failed to load dashboard:", error);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      setBlogCount(totalBlogs);
-    } catch (error) {
-      console.error(
-        "Failed to load dashboard:",
-        error
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  loadDashboard();
-}, []); 
+    loadDashboard();
+  }, []);
 
   return (
     <div className="min-h-screen">

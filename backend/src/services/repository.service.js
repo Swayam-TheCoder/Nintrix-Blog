@@ -45,18 +45,40 @@ export const createRepository = async ({
   return repository;
 };
 
-export const getMyRepositories = async (userId) => {
-  const { data, error } = await supabaseAdmin
+export const getMyRepositories = async (
+  userId,
+  page = 1,
+  limit = 6
+) => {
+  const from = (page - 1) * limit;
+  const to = from + limit - 1;
+
+  const {
+    data,
+    error,
+    count,
+  } = await supabaseAdmin
     .from("repositories")
-    .select("*")
+    .select("*", { count: "exact" })
     .eq("owner_id", userId)
-    .order("created_at", { ascending: false });
+    .order("created_at", {
+      ascending: false,
+    })
+    .range(from, to);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return data;
+  return {
+    repositories: data,
+    total: count || 0,
+    page,
+    limit,
+    totalPages: Math.ceil(
+      (count || 0) / limit
+    ),
+  };
 };
 
 export const getRepositoryById = async (repositoryId, userId) => {
