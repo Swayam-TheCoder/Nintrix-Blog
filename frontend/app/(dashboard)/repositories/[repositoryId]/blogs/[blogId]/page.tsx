@@ -23,6 +23,11 @@ import {
   archiveBlog,
 } from "@/services/blog.service";
 
+import {
+  getBlogVersions,
+  type BlogVersion,
+} from "@/services/blog-version.service";
+
 export default function BlogEditorPage() {
   const params = useParams();
   const router = useRouter();
@@ -31,6 +36,12 @@ export default function BlogEditorPage() {
   const blogId = params.blogId as string;
 
   const [blog, setBlog] = useState<Blog | null>(null);
+
+  const [versions, setVersions] = useState<BlogVersion[]>([]);
+  const [selectedVersion, setSelectedVersion] = useState<BlogVersion | null>(
+    null,
+  );
+  const [versionsLoading, setVersionsLoading] = useState(false);
 
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
@@ -45,36 +56,73 @@ export default function BlogEditorPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  useEffect(() => {
-    const loadBlog = async () => {
-      try {
-        setLoading(true);
-        setError("");
+  const loadVersions = async () => {
+    if (!repositoryId || !blogId) return;
 
-        const data = await getBlog(repositoryId, blogId);
+    try {
+      setVersionsLoading(true);
 
-        setBlog(data);
-        setTitle(data.title);
-        setSlug(data.slug);
-        setExcerpt(data.excerpt || "");
-        setContent(data.content || "");
-      } catch (error: any) {
-        console.error("Load blog error:", error);
+      const data = await getBlogVersions(repositoryId, blogId);
 
-        setError(
-          error?.response?.data?.message ||
-            error?.message ||
-            "Failed to load blog."
-        );
-      } finally {
-        setLoading(false);
+      setVersions(data);
+
+      if (data.length > 0) {
+        setSelectedVersion(data[0]);
       }
-    };
-
-    if (repositoryId && blogId) {
-      loadBlog();
+    } catch (error) {
+      console.error("Load blog versions error:", error);
+    } finally {
+      setVersionsLoading(false);
     }
-  }, [repositoryId, blogId]);
+  };
+
+  useEffect(() => {
+  const loadBlog = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const data = await getBlog(repositoryId, blogId);
+
+      setBlog(data);
+      setTitle(data.title);
+      setSlug(data.slug);
+      setExcerpt(data.excerpt || "");
+      setContent(data.content || "");
+
+      if (data.status === "PUBLISHED") {
+        setVersionsLoading(true);
+
+        const versionData = await getBlogVersions(
+          repositoryId,
+          blogId
+        );
+
+        setVersions(versionData);
+
+        if (versionData.length > 0) {
+          setSelectedVersion(versionData[0]);
+        }
+
+        setVersionsLoading(false);
+      }
+    } catch (error: any) {
+      console.error("Load blog error:", error);
+
+      setError(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to load blog."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (repositoryId && blogId) {
+    loadBlog();
+  }
+}, [repositoryId, blogId]);
 
   const handleSave = async () => {
     if (!title.trim()) {
@@ -92,16 +140,12 @@ export default function BlogEditorPage() {
     setSuccess("");
 
     try {
-      const updatedBlog = await updateBlog(
-        repositoryId,
-        blogId,
-        {
-          title: title.trim(),
-          slug: slug.trim(),
-          excerpt: excerpt.trim() || undefined,
-          content,
-        }
-      );
+      const updatedBlog = await updateBlog(repositoryId, blogId, {
+        title: title.trim(),
+        slug: slug.trim(),
+        excerpt: excerpt.trim() || undefined,
+        content,
+      });
 
       setBlog(updatedBlog);
       setSuccess("Changes saved successfully.");
@@ -115,7 +159,7 @@ export default function BlogEditorPage() {
       setError(
         error?.response?.data?.message ||
           error?.message ||
-          "Failed to save changes."
+          "Failed to save changes.",
       );
     } finally {
       setSaving(false);
@@ -130,15 +174,12 @@ export default function BlogEditorPage() {
     setSuccess("");
 
     try {
-      const nextStatus =
-        blog.status === "PUBLISHED"
-          ? "DRAFT"
-          : "PUBLISHED";
+      const nextStatus = blog.status === "PUBLISHED" ? "DRAFT" : "PUBLISHED";
 
       const updatedBlog = await changeBlogStatus(
         repositoryId,
         blogId,
-        nextStatus
+        nextStatus,
       );
 
       setBlog(updatedBlog);
@@ -146,7 +187,7 @@ export default function BlogEditorPage() {
       setSuccess(
         nextStatus === "PUBLISHED"
           ? "Blog published successfully."
-          : "Blog moved back to draft."
+          : "Blog moved back to draft.",
       );
 
       setTimeout(() => {
@@ -158,7 +199,7 @@ export default function BlogEditorPage() {
       setError(
         error?.response?.data?.message ||
           error?.message ||
-          "Failed to change blog status."
+          "Failed to change blog status.",
       );
     } finally {
       setPublishing(false);
@@ -166,42 +207,39 @@ export default function BlogEditorPage() {
   };
 
   const handleArchive = async () => {
-  if (!blog) return;
+    if (!blog) return;
 
-  setPublishing(true);
-  setError("");
-  setSuccess("");
+    setPublishing(true);
+    setError("");
+    setSuccess("");
 
-  try {
-    const updatedBlog = await archiveBlog(
-      repositoryId,
-      blogId
-    );
+    try {
+      const updatedBlog = await archiveBlog(repositoryId, blogId);
 
-    setBlog(updatedBlog);
-    setSuccess("Blog archived successfully.");
+      setBlog(updatedBlog);
+      setSuccess("Blog archived successfully.");
 
-    setTimeout(() => {
-      setSuccess("");
-    }, 3000);
-  } catch (error: any) {
-    console.error("Archive blog error:", error);
+      setTimeout(() => {
+        setSuccess("");
+      }, 3000);
+    } catch (error: any) {
+      console.error("Archive blog error:", error);
 
-    setError(
-      error?.response?.data?.message ||
-        error?.message ||
-        "Failed to archive blog."
-    );
-  } finally {
-    setPublishing(false);
-  }
-};
+      setError(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to archive blog.",
+      );
+    } finally {
+      setPublishing(false);
+    }
+  };
 
   const handleDelete = async () => {
     if (!blog) return;
 
     const confirmed = window.confirm(
-      "Are you sure you want to delete this blog? This action cannot be undone."
+      "Are you sure you want to delete this blog? This action cannot be undone.",
     );
 
     if (!confirmed) return;
@@ -212,16 +250,14 @@ export default function BlogEditorPage() {
     try {
       await deleteBlog(repositoryId, blogId);
 
-      router.push(
-        `/repositories/${repositoryId}`
-      );
+      router.push(`/repositories/${repositoryId}`);
     } catch (error: any) {
       console.error("Delete blog error:", error);
 
       setError(
         error?.response?.data?.message ||
           error?.message ||
-          "Failed to delete blog."
+          "Failed to delete blog.",
       );
 
       setDeleting(false);
@@ -231,10 +267,7 @@ export default function BlogEditorPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Loader2
-          size={30}
-          className="animate-spin text-white/40"
-        />
+        <Loader2 size={30} className="animate-spin text-white/40" />
       </div>
     );
   }
@@ -247,13 +280,9 @@ export default function BlogEditorPage() {
             <FileText size={22} />
           </div>
 
-          <h1 className="mt-4 text-lg font-semibold">
-            Blog not found
-          </h1>
+          <h1 className="mt-4 text-lg font-semibold">Blog not found</h1>
 
-          <p className="mt-2 text-sm text-white/40">
-            {error}
-          </p>
+          <p className="mt-2 text-sm text-white/40">{error}</p>
 
           <Link
             href={`/repositories/${repositoryId}`}
@@ -284,17 +313,15 @@ export default function BlogEditorPage() {
             </Link>
 
             <div className="flex items-center gap-3">
-              <h1 className="text-xl font-semibold">
-                Edit Blog
-              </h1>
+              <h1 className="text-xl font-semibold">Edit Blog</h1>
 
               <span
                 className={`rounded-full px-2.5 py-1 text-[11px] ${
                   blog.status === "PUBLISHED"
                     ? "bg-emerald-500/10 text-emerald-300"
                     : blog.status === "ARCHIVED"
-                    ? "bg-red-500/10 text-red-300"
-                    : "bg-yellow-500/10 text-yellow-300"
+                      ? "bg-red-500/10 text-red-300"
+                      : "bg-yellow-500/10 text-yellow-300"
                 }`}
               >
                 {blog.status}
@@ -310,19 +337,14 @@ export default function BlogEditorPage() {
                 className="inline-flex items-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm text-white/70 transition hover:bg-white/5 hover:text-white disabled:opacity-50"
               >
                 {publishing ? (
-                  <Loader2
-                    size={16}
-                    className="animate-spin"
-                  />
+                  <Loader2 size={16} className="animate-spin" />
                 ) : blog.status === "PUBLISHED" ? (
                   <Eye size={16} />
                 ) : (
                   <Check size={16} />
                 )}
 
-                {blog.status === "PUBLISHED"
-                  ? "Move to Draft"
-                  : "Publish"}
+                {blog.status === "PUBLISHED" ? "Move to Draft" : "Publish"}
               </button>
             )}
 
@@ -343,14 +365,10 @@ export default function BlogEditorPage() {
               className="inline-flex items-center gap-2 rounded-xl border border-red-500/20 px-4 py-2.5 text-sm text-red-300 transition hover:bg-red-500/10 disabled:opacity-50"
             >
               {deleting ? (
-                <Loader2
-                  size={16}
-                  className="animate-spin"
-                />
+                <Loader2 size={16} className="animate-spin" />
               ) : (
                 <Trash2 size={16} />
               )}
-
               Delete
             </button>
           </div>
@@ -374,15 +392,11 @@ export default function BlogEditorPage() {
         <div className="space-y-6">
           {/* Title */}
           <div>
-            <label className="mb-2 block text-sm text-white/50">
-              Title
-            </label>
+            <label className="mb-2 block text-sm text-white/50">Title</label>
 
             <input
               value={title}
-              onChange={(e) =>
-                setTitle(e.target.value)
-              }
+              onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter blog title"
               className="w-full rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-2xl font-semibold outline-none transition placeholder:text-white/20 focus:border-white/25"
             />
@@ -390,22 +404,16 @@ export default function BlogEditorPage() {
 
           {/* Slug */}
           <div>
-            <label className="mb-2 block text-sm text-white/50">
-              Slug
-            </label>
+            <label className="mb-2 block text-sm text-white/50">Slug</label>
 
             <div className="flex items-center rounded-xl border border-white/10 bg-white/[0.02]">
-              <span className="px-4 text-sm text-white/25">
-                /
-              </span>
+              <span className="px-4 text-sm text-white/25">/</span>
 
               <input
                 value={slug}
                 onChange={(e) =>
                   setSlug(
-                    e.target.value
-                      .toLowerCase()
-                      .replace(/[^a-z0-9-]/g, "-")
+                    e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
                   )
                 }
                 className="flex-1 bg-transparent py-3 pr-4 text-sm outline-none"
@@ -415,15 +423,11 @@ export default function BlogEditorPage() {
 
           {/* Excerpt */}
           <div>
-            <label className="mb-2 block text-sm text-white/50">
-              Excerpt
-            </label>
+            <label className="mb-2 block text-sm text-white/50">Excerpt</label>
 
             <textarea
               value={excerpt}
-              onChange={(e) =>
-                setExcerpt(e.target.value)
-              }
+              onChange={(e) => setExcerpt(e.target.value)}
               rows={3}
               placeholder="Short description of your blog..."
               className="w-full resize-none rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm leading-6 outline-none transition placeholder:text-white/20 focus:border-white/25"
@@ -432,15 +436,11 @@ export default function BlogEditorPage() {
 
           {/* Content */}
           <div>
-            <label className="mb-2 block text-sm text-white/50">
-              Content
-            </label>
+            <label className="mb-2 block text-sm text-white/50">Content</label>
 
             <textarea
               value={content}
-              onChange={(e) =>
-                setContent(e.target.value)
-              }
+              onChange={(e) => setContent(e.target.value)}
               rows={24}
               placeholder="Start writing your blog..."
               className="w-full resize-y rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-5 text-sm leading-7 outline-none transition placeholder:text-white/20 focus:border-white/25"
@@ -450,10 +450,7 @@ export default function BlogEditorPage() {
           {/* Bottom actions */}
           <div className="flex items-center justify-between border-t border-white/10 pt-6">
             <div className="text-xs text-white/25">
-              Last updated{" "}
-              {new Date(
-                blog.updated_at
-              ).toLocaleString()}
+              Last updated {new Date(blog.updated_at).toLocaleString()}
             </div>
 
             <button
@@ -462,20 +459,126 @@ export default function BlogEditorPage() {
               className="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-medium text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {saving ? (
-                <Loader2
-                  size={16}
-                  className="animate-spin"
-                />
+                <Loader2 size={16} className="animate-spin" />
               ) : (
                 <Save size={16} />
               )}
 
-              {saving
-                ? "Saving..."
-                : "Save Changes"}
+              {saving ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </div>
+
+        {/* Version History */}
+{blog.status === "PUBLISHED" && (
+  <section className="mt-12 border-t border-white/10 pt-8">
+    <div className="mb-5">
+      <h2 className="text-lg font-semibold">
+        Version History
+      </h2>
+
+      <p className="mt-1 text-sm text-white/40">
+        Previous published versions of this blog
+      </p>
+    </div>
+
+    {versionsLoading ? (
+      <div className="flex items-center gap-2 text-sm text-white/40">
+        <Loader2 size={16} className="animate-spin" />
+        Loading versions...
+      </div>
+    ) : versions.length === 0 ? (
+      <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+        <p className="text-sm text-white/40">
+          No versions available yet.
+        </p>
+      </div>
+    ) : (
+      <div className="space-y-3">
+        {versions.map((version) => {
+          const isSelected =
+            selectedVersion?.id === version.id;
+
+          return (
+            <button
+              key={version.id}
+              type="button"
+              onClick={() => setSelectedVersion(version)}
+              className={`w-full rounded-2xl border p-5 text-left transition ${
+                isSelected
+                  ? "border-white/20 bg-white/[0.06]"
+                  : "border-white/10 bg-white/[0.02] hover:bg-white/[0.04]"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium">
+                      Version {version.version_number}
+                    </span>
+
+                    {version.version_number ===
+                      versions[0].version_number && (
+                      <span className="rounded-full bg-emerald-500/10 px-2 py-1 text-[10px] text-emerald-300">
+                        Latest
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="mt-2 line-clamp-1 text-sm text-white/50">
+                    {version.title}
+                  </p>
+                </div>
+
+                <span className="shrink-0 text-xs text-white/30">
+                  {new Date(
+                    version.created_at
+                  ).toLocaleDateString()}
+                </span>
+              </div>
+
+              <div className="mt-3 text-xs text-white/35">
+                {version.profiles?.display_name ||
+                  version.profiles?.username ||
+                  "Unknown author"}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    )}
+  </section>
+)}
+
+{selectedVersion && (
+  <section className="mt-6 rounded-2xl border border-white/10 bg-white/[0.02]">
+    <div className="border-b border-white/10 px-6 py-5">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <p className="text-xs text-white/30">
+            Version {selectedVersion.version_number}
+          </p>
+
+          <h3 className="mt-1 text-lg font-semibold">
+            {selectedVersion.title}
+          </h3>
+        </div>
+
+        <span className="text-xs text-white/30">
+          {new Date(
+            selectedVersion.created_at
+          ).toLocaleString()}
+        </span>
+      </div>
+    </div>
+
+    <div className="px-6 py-6">
+      <div className="whitespace-pre-wrap text-sm leading-7 text-white/65">
+        {selectedVersion.content || "No content"}
+      </div>
+    </div>
+  </section>
+)}
       </main>
     </div>
   );
