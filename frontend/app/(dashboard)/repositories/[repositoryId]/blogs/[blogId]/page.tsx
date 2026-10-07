@@ -29,6 +29,8 @@ import {
   type BlogVersion,
 } from "@/services/blog-version.service";
 
+import VersionHistory from "@/components/blog/VersionHistory";
+
 export default function BlogEditorPage() {
   const params = useParams();
   const router = useRouter();
@@ -37,12 +39,6 @@ export default function BlogEditorPage() {
   const blogId = params.blogId as string;
 
   const [blog, setBlog] = useState<Blog | null>(null);
-
-  const [versions, setVersions] = useState<BlogVersion[]>([]);
-  const [selectedVersion, setSelectedVersion] = useState<BlogVersion | null>(
-    null,
-  );
-  const [versionsLoading, setVersionsLoading] = useState(false);
 
   const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
@@ -57,11 +53,21 @@ export default function BlogEditorPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  const [versions, setVersions] = useState<BlogVersion[]>([]);
+
+  const [selectedVersion, setSelectedVersion] = useState<BlogVersion | null>(
+    null,
+  );
+
+  const [loadingVersions, setLoadingVersions] = useState(false);
+
+  const [restoringVersion, setRestoringVersion] = useState(false);
+
   const loadVersions = async () => {
     if (!repositoryId || !blogId) return;
 
     try {
-      setVersionsLoading(true);
+      setLoadingVersions(true);
 
       const data = await getBlogVersions(repositoryId, blogId);
 
@@ -73,7 +79,7 @@ export default function BlogEditorPage() {
     } catch (error) {
       console.error("Load blog versions error:", error);
     } finally {
-      setVersionsLoading(false);
+      setLoadingVersions(false);
     }
   };
 
@@ -90,20 +96,6 @@ export default function BlogEditorPage() {
         setSlug(data.slug);
         setExcerpt(data.excerpt || "");
         setContent(data.content || "");
-
-        if (data.status === "PUBLISHED") {
-          setVersionsLoading(true);
-
-          const versionData = await getBlogVersions(repositoryId, blogId);
-
-          setVersions(versionData);
-
-          if (versionData.length > 0) {
-            setSelectedVersion(versionData[0]);
-          }
-
-          setVersionsLoading(false);
-        }
       } catch (error: any) {
         console.error("Load blog error:", error);
 
@@ -120,6 +112,27 @@ export default function BlogEditorPage() {
     if (repositoryId && blogId) {
       loadBlog();
     }
+  }, [repositoryId, blogId]);
+
+  useEffect(() => {
+    if (!repositoryId || !blogId) return;
+
+    const loadVersions = async () => {
+      try {
+        setLoadingVersions(true);
+
+        const data = await getBlogVersions(repositoryId, blogId);
+
+        setVersions(data);
+        setSelectedVersion(data[0] || null);
+      } catch (error) {
+        console.error("Failed to load versions:", error);
+      } finally {
+        setLoadingVersions(false);
+      }
+    };
+
+    loadVersions();
   }, [repositoryId, blogId]);
 
   const handleSave = async () => {
@@ -243,7 +256,7 @@ export default function BlogEditorPage() {
     if (!confirmed) return;
 
     try {
-      setSaving(true);
+      setRestoringVersion(true);
       setError("");
       setSuccess("");
 
@@ -276,7 +289,7 @@ export default function BlogEditorPage() {
           "Failed to restore version.",
       );
     } finally {
-      setSaving(false);
+      setRestoringVersion(false);
     }
   };
 
@@ -515,78 +528,13 @@ export default function BlogEditorPage() {
         </div>
 
         {/* Version History */}
-        {blog.status === "PUBLISHED" && (
-          <section className="mt-12 border-t border-white/10 pt-8">
-            <div className="mb-5">
-              <h2 className="text-lg font-semibold">Version History</h2>
-
-              <p className="mt-1 text-sm text-white/40">
-                Previous published versions of this blog
-              </p>
-            </div>
-
-            {versionsLoading ? (
-              <div className="flex items-center gap-2 text-sm text-white/40">
-                <Loader2 size={16} className="animate-spin" />
-                Loading versions...
-              </div>
-            ) : versions.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-                <p className="text-sm text-white/40">
-                  No versions available yet.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {versions.map((version) => {
-                  const isSelected = selectedVersion?.id === version.id;
-
-                  return (
-                    <button
-                      key={version.id}
-                      type="button"
-                      onClick={() => setSelectedVersion(version)}
-                      className={`w-full rounded-2xl border p-5 text-left transition ${
-                        isSelected
-                          ? "border-white/20 bg-white/[0.06]"
-                          : "border-white/10 bg-white/[0.02] hover:bg-white/[0.04]"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <div className="flex items-center gap-3">
-                            <span className="font-medium">
-                              Version {version.version_number}
-                            </span>
-
-                            {version.version_number ===
-                              versions[0].version_number && (
-                              <span className="rounded-full bg-emerald-500/10 px-2 py-1 text-[10px] text-emerald-300">
-                                Latest
-                              </span>
-                            )}
-                          </div>
-
-                          <p className="mt-2 line-clamp-1 text-sm text-white/50">
-                            {version.title}
-                          </p>
-                        </div>
-
-                        <span className="shrink-0 text-xs text-white/30">
-                          {new Date(version.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-
-                      <div className="mt-3 text-xs text-white/35">
-                        {version.profiles?.display_name ||
-                          version.profiles?.username ||
-                          "Unknown author"}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+        {versions.length > 0 && (
+          <section className="mt-10">
+            <VersionHistory
+              versions={versions}
+              selectedVersionId={selectedVersion?.id}
+              onSelect={setSelectedVersion}
+            />
           </section>
         )}
 
