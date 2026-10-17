@@ -55,13 +55,18 @@ export default function NewRepositoryPage() {
 
     try {
       const response = await createRepository({
-        name: name.trim(),
-        slug: slug.trim(),
-        description: description.trim() || undefined,
+        name,
+        slug,
+        description,
         visibility,
       });
 
       const repository = response.repository;
+
+      if (!repository?.id) {
+        console.error("Unexpected response:", response);
+        throw new Error("Repository ID missing from API response.");
+      }
 
       router.push(`/repositories/${repository.id}`);
     } catch (error: any) {

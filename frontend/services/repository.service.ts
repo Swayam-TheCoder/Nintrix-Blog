@@ -48,10 +48,12 @@ export const getRepository = async (repositoryId: string) => {
   return response.data.repository;
 };
 
-export const createRepository = async (data: CreateRepositoryData) => {
+export const createRepository = async (
+  data: CreateRepositoryData
+) => {
   const response = await api.post("/repositories", data);
 
-  return response.data.repository;
+  return response.data;
 };
 
 export const updateRepository = async (
