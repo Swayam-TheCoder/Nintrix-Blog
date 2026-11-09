@@ -20,7 +20,7 @@ import {
   Loader2,
   ShieldCheck,
   ChevronRight,
-  Github,
+  GitBranch,
 } from "lucide-react";
 
 import { useAuth } from "@/components/auth/AuthProvider";
