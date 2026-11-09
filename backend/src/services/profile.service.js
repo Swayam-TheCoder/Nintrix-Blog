@@ -19,7 +19,7 @@ export const updateProfile = async (userId, updates) => {
     .from("profiles")
     .update({
       ...updates,
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     })
     .eq("id", userId)
     .select()
@@ -31,8 +31,6 @@ export const updateProfile = async (userId, updates) => {
 
   return data;
 };
-
-
 
 export const searchProfiles = async (query, currentUserId) => {
   const searchTerm = query.replace(/[\\%_]/g, "\\$&");
@@ -51,7 +49,7 @@ export const searchProfiles = async (query, currentUserId) => {
       .select("id, username, display_name, avatar_url, bio")
       .ilike("display_name", pattern)
       .neq("id", currentUserId)
-      .limit(20)
+      .limit(20),
   ]);
 
   if (usernameResult.error) {
@@ -67,10 +65,35 @@ export const searchProfiles = async (query, currentUserId) => {
 
   for (const profile of [
     ...(usernameResult.data || []),
-    ...(displayNameResult.data || [])
+    ...(displayNameResult.data || []),
   ]) {
     profiles.set(profile.id, profile);
   }
 
-  return Array.from(profiles.values()).slice(0, 20);
+  const results = Array.from(profiles.values()).slice(0, 20);
+
+  if (results.length === 0) {
+    return [];
+  }
+
+  const profileIds = results.map((profile) => profile.id);
+
+  const { data: follows, error: followsError } = await supabaseAdmin
+    .from("follows")
+    .select("following_id")
+    .eq("follower_id", currentUserId)
+    .in("following_id", profileIds);
+
+  if (followsError) {
+    throw new Error(followsError.message);
+  }
+
+  const followingIds = new Set(
+    (follows || []).map((follow) => follow.following_id),
+  );
+
+  return results.map((profile) => ({
+    ...profile,
+    is_following: followingIds.has(profile.id),
+  }));
 };

@@ -41,3 +41,22 @@ export const getProfileRepositories = async (
 
   return response.data;
 };
+
+export interface DiscoverProfile {
+  id: string;
+  username: string;
+  display_name: string | null;
+  bio: string | null;
+  avatar_url: string | null;
+  is_following: boolean;
+}
+
+export const searchProfiles = async (
+  query: string
+): Promise<DiscoverProfile[]> => {
+  const response = await api.get("/profile/search", {
+    params: { q: query },
+  });
+
+  return response.data.profiles;
+};
