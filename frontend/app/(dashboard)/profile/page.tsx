@@ -9,7 +9,10 @@ import {
   FileText,
   FolderGit2,
   UserRound,
+  Users,
 } from "lucide-react";
+
+import { getFollowStats } from "@/services/follow.service";
 
 import { getProfile, type Profile } from "@/services/profile.service";
 
@@ -28,6 +31,10 @@ export default function ProfilePage() {
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [followStats, setFollowStats] = useState({
+    followers: 0,
+    following: 0,
+  });
 
   const REPOSITORIES_PER_PAGE = 3;
   useEffect(() => {
@@ -76,6 +83,21 @@ export default function ProfilePage() {
     loadRepositories();
   }, [page]);
 
+  useEffect(() => {
+    if (!profile) return;
+
+    const loadFollowStats = async () => {
+      try {
+        const stats = await getFollowStats(profile.id);
+        setFollowStats(stats);
+      } catch (error) {
+        console.error("Failed to load follow stats:", error);
+      }
+    };
+
+    loadFollowStats();
+  }, [profile]);
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center">
@@ -110,6 +132,14 @@ export default function ProfilePage() {
           >
             <Edit3 size={16} />
             Edit Profile
+          </Link>
+          <Link
+            href={`/users/${profile.username}`}
+            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium transition hover:bg-white/10"
+          >
+            <UserRound size={16} />
+            View Public Profile
+            <ArrowRight size={14} />
           </Link>
         </div>
       </header>
@@ -154,9 +184,19 @@ export default function ProfilePage() {
           {/* Social Stats */}
           <div className="relative mt-8 border-t border-white/10 pt-6">
             <div className="flex gap-8">
-              <ProfileStat label="Followers" value={0} />
+              <Link
+                href={`/users/${profile.username}/connections?type=followers`}
+                className="transition hover:text-violet-400"
+              >
+                <ProfileStat label="Followers" value={followStats.followers} />
+              </Link>
 
-              <ProfileStat label="Following" value={0} />
+              <Link
+                href={`/users/${profile.username}/connections?type=following`}
+                className="transition hover:text-violet-400"
+              >
+                <ProfileStat label="Following" value={followStats.following} />
+              </Link>
             </div>
           </div>
         </section>
@@ -180,7 +220,7 @@ export default function ProfilePage() {
 
             <StatCard
               icon={<FileText size={18} />}
-              label="Blog posts"
+              label="Blog posts in displayed repositories"
               value={String(blogPosts)}
             />
 

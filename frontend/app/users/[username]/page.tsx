@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -23,14 +22,10 @@ import {
   type PublicProfile,
 } from "@/services/profile.service";
 
-import {
-  followUser,
-  unfollowUser,
-} from "@/services/follow.service";
+import { followUser, unfollowUser } from "@/services/follow.service";
 
 export default function PublicProfilePage() {
-  const params = useParams<{ username: string }>();
-  const username = params.username;
+  const { username } = useParams<{ username: string }>();
 
   const { user, loading: authLoading } = useAuth();
 
@@ -52,12 +47,10 @@ export default function PublicProfilePage() {
 
       // Authenticated users can see their follow relationship
       if (user && user.id !== result.profile.id) {
-        const searchResults = await searchProfiles(
-          result.profile.username
-        );
+        const searchResults = await searchProfiles(result.profile.username);
 
         const matchingProfile = searchResults.find(
-          (profile) => profile.id === result.profile.id
+          (profile) => profile.id === result.profile.id,
         );
 
         setIsFollowing(matchingProfile?.is_following ?? false);
@@ -65,9 +58,7 @@ export default function PublicProfilePage() {
         setIsFollowing(false);
       }
     } catch (err: any) {
-      setError(
-        err.response?.data?.message || "Unable to load this profile."
-      );
+      setError(err.response?.data?.message || "Unable to load this profile.");
     } finally {
       setLoading(false);
     }
@@ -104,7 +95,7 @@ export default function PublicProfilePage() {
                   followers: Math.max(0, current.stats.followers - 1),
                 },
               }
-            : current
+            : current,
         );
       } else {
         await followUser(data.profile.id);
@@ -119,12 +110,12 @@ export default function PublicProfilePage() {
                   followers: current.stats.followers + 1,
                 },
               }
-            : current
+            : current,
         );
       }
     } catch (err: any) {
       setError(
-        err.response?.data?.message || "Unable to update follow status."
+        err.response?.data?.message || "Unable to update follow status.",
       );
     } finally {
       setFollowLoading(false);
@@ -162,7 +153,6 @@ export default function PublicProfilePage() {
   return (
     <main className="min-h-screen bg-[#08090c] px-4 py-8 text-white sm:px-8">
       <div className="mx-auto max-w-5xl">
-
         <Link
           href="/discover"
           className="mb-8 inline-flex items-center gap-2 text-sm text-white/40 transition hover:text-white"
@@ -210,10 +200,10 @@ export default function PublicProfilePage() {
               <div className="mt-4 flex items-center gap-2 text-xs text-white/35">
                 <CalendarDays size={14} />
                 Joined{" "}
-                {new Date(profile.created_at).toLocaleDateString(
-                  undefined,
-                  { month: "long", year: "numeric" }
-                )}
+                {new Date(profile.created_at).toLocaleDateString(undefined, {
+                  month: "long",
+                  year: "numeric",
+                })}
               </div>
             </div>
 
@@ -254,8 +244,19 @@ export default function PublicProfilePage() {
 
           {/* Follow statistics */}
           <div className="relative mt-8 flex gap-8 border-t border-white/10 pt-6">
-            <Stat label="Followers" value={stats.followers} />
-            <Stat label="Following" value={stats.following} />
+            <Link
+              href={`/users/${profile.username}/connections?type=followers`}
+              className="transition hover:text-violet-400"
+            >
+              <Stat label="Followers" value={stats.followers} />
+            </Link>
+
+            <Link
+              href={`/users/${profile.username}/connections?type=following`}
+              className="transition hover:text-violet-400"
+            >
+              <Stat label="Following" value={stats.following} />
+            </Link>
           </div>
         </section>
 
@@ -264,9 +265,7 @@ export default function PublicProfilePage() {
           <div className="mb-5 flex items-center gap-2">
             <FolderGit2 size={19} className="text-violet-300" />
             <h2 className="text-lg font-semibold">Public repositories</h2>
-            <span className="text-sm text-white/30">
-              {repositories.length}
-            </span>
+            <span className="text-sm text-white/30">{repositories.length}</span>
           </div>
 
           {repositories.length === 0 ? (
@@ -303,9 +302,7 @@ export default function PublicProfilePage() {
           <div className="mb-5 flex items-center gap-2">
             <BookOpen size={19} className="text-violet-300" />
             <h2 className="text-lg font-semibold">Published blogs</h2>
-            <span className="text-sm text-white/30">
-              {blogs.length}
-            </span>
+            <span className="text-sm text-white/30">{blogs.length}</span>
           </div>
 
           {blogs.length === 0 ? (
@@ -324,9 +321,7 @@ export default function PublicProfilePage() {
                       : blog.repositories?.name || "Public repository"}
                   </div>
 
-                  <h3 className="mt-3 text-lg font-semibold">
-                    {blog.title}
-                  </h3>
+                  <h3 className="mt-3 text-lg font-semibold">{blog.title}</h3>
 
                   {blog.excerpt && (
                     <p className="mt-2 text-sm leading-6 text-white/45">
@@ -350,13 +345,7 @@ export default function PublicProfilePage() {
   );
 }
 
-function Stat({
-  label,
-  value,
-}: {
-  label: string;
-  value: number;
-}) {
+function Stat({ label, value }: { label: string; value: number }) {
   return (
     <div>
       <p className="text-xl font-semibold">{value}</p>
