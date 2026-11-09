@@ -239,7 +239,7 @@ export default function Sidebar() {
             </Link>
 
             <Link
-              href="/settings"
+              href="/dashboard/settings"
               className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-white/50 transition hover:bg-white/5 hover:text-white"
             >
               <Settings size={18} />
@@ -459,7 +459,7 @@ export default function Sidebar() {
               </Link>
 
               <Link
-                href="/settings"
+                href="/dashboard/settings"
                 onClick={closeMobileSidebar}
                 className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/50 transition hover:bg-white/5 hover:text-white"
               >

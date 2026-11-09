@@ -117,41 +117,44 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen">
       {/* Header */}
-      <header className="border-b border-white/10 px-8 py-6">
-        <div className="flex items-center justify-between">
+      <header className="border-b border-white/10 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
+            <p className="mb-1 text-sm text-white/40">Profile</p>
+            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
               Your profile
             </h1>
-            <p className="mb-1 text-sm text-white/40">Profile</p>
           </div>
 
-          <Link
-            href="/profile/edit"
-            className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium transition hover:bg-white/10"
-          >
-            <Edit3 size={16} />
-            Edit Profile
-          </Link>
-          <Link
-            href={`/users/${profile.username}`}
-            className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium transition hover:bg-white/10"
-          >
-            <UserRound size={16} />
-            View Public Profile
-            <ArrowRight size={14} />
-          </Link>
+          <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap">
+            <Link
+              href="/profile/edit"
+              className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium transition hover:bg-white/10"
+            >
+              <Edit3 size={16} />
+              Edit Profile
+            </Link>
+
+            <Link
+              href={`/users/${profile.username}`}
+              className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium transition hover:bg-white/10"
+            >
+              <UserRound size={16} />
+              View Public Profile
+              <ArrowRight size={14} />
+            </Link>
+          </div>
         </div>
       </header>
 
-      <div className="space-y-8 p-8">
+      <div className="space-y-7 px-4 py-5 sm:space-y-8 sm:px-6 sm:py-7 lg:p-8">
         {/* Profile Hero */}
-        <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-violet-500/10 via-transparent to-blue-500/5 p-8">
+        <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-violet-500/10 via-transparent to-blue-500/5 p-5 sm:rounded-3xl sm:p-8">
           <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-violet-500/10 blur-3xl" />
 
-          <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center">
+          <div className="relative flex min-w-0 flex-col gap-5 sm:flex-row sm:items-center sm:gap-6">
             {/* Avatar */}
-            <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-3xl border border-white/10 bg-white/5">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-white/10 bg-white/5 sm:h-24 sm:w-24 sm:rounded-3xl">
               {profile.avatar_url ? (
                 <img
                   src={profile.avatar_url}
@@ -159,22 +162,25 @@ export default function ProfilePage() {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <UserRound size={38} className="text-white/30" />
+                <UserRound
+                  size={34}
+                  className="text-white/30 sm:h-[38px] sm:w-[38px]"
+                />
               )}
             </div>
 
             {/* Profile Info */}
-            <div className="min-w-0">
-              <h2 className="text-3xl font-semibold tracking-tight">
+            <div className="min-w-0 flex-1">
+              <h2 className="break-words text-2xl font-semibold tracking-tight sm:text-3xl">
                 {profile.display_name || profile.username}
               </h2>
 
-              <p className="mt-1 text-sm text-violet-300">
+              <p className="mt-1 break-all text-sm text-violet-300">
                 @{profile.username}
               </p>
 
               {profile.bio && (
-                <p className="mt-4 max-w-2xl text-sm leading-6 text-white/50">
+                <p className="mt-3 max-w-2xl break-words text-sm leading-6 text-white/50 sm:mt-4">
                   {profile.bio}
                 </p>
               )}
@@ -182,8 +188,8 @@ export default function ProfilePage() {
           </div>
 
           {/* Social Stats */}
-          <div className="relative mt-8 border-t border-white/10 pt-6">
-            <div className="flex gap-8">
+          <div className="relative mt-6 border-t border-white/10 pt-5 sm:mt-8 sm:pt-6">
+            <div className="flex flex-wrap gap-8 sm:gap-10">
               <Link
                 href={`/users/${profile.username}/connections?type=followers`}
                 className="transition hover:text-violet-400"
@@ -211,7 +217,7 @@ export default function ProfilePage() {
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4">
             <StatCard
               icon={<FolderGit2 size={18} />}
               label="Repositories"
@@ -234,7 +240,7 @@ export default function ProfilePage() {
 
         {/* Repositories */}
         <section>
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="font-semibold">Your repositories</h2>
 
@@ -256,14 +262,14 @@ export default function ProfilePage() {
             <EmptyRepositories />
           ) : (
             <>
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                 {repositories.map((repository) => (
                   <RepositoryCard key={repository.id} repository={repository} />
                 ))}
               </div>
 
               {totalPages > 1 && (
-                <div className="mt-6 flex items-center justify-center gap-3">
+                <div className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
                   <button
                     disabled={page === 1}
                     onClick={() => setPage((current) => current - 1)}
@@ -307,24 +313,28 @@ function RepositoryCard({ repository }: { repository: Repository }) {
   return (
     <Link
       href={`/repositories/${repository.id}`}
-      className="group rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition hover:border-white/20 hover:bg-white/[0.04]"
+      className="group min-w-0 rounded-2xl border border-white/10 bg-white/[0.02] p-4 transition hover:border-white/20 hover:bg-white/[0.04] sm:p-5"
     >
-      <div className="flex items-start justify-between">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10 text-violet-300">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-violet-300">
           <FolderGit2 size={19} />
         </div>
 
-        <span className="rounded-full border border-white/10 px-2.5 py-1 text-[11px] text-white/40">
+        <span className="max-w-[50%] truncate rounded-full border border-white/10 px-2.5 py-1 text-[11px] text-white/40">
           {repository.visibility}
         </span>
       </div>
 
-      <h3 className="mt-5 font-medium">{repository.name}</h3>
+      <h3 className="mt-4 break-words font-medium transition group-hover:text-violet-300 sm:mt-5">
+        {repository.name}
+      </h3>
 
-      <p className="mt-1 text-xs text-white/35">{repository.slug}</p>
+      <p className="mt-1 break-all text-xs text-white/35">
+        {repository.slug}
+      </p>
 
       {repository.description && (
-        <p className="mt-3 line-clamp-2 text-sm leading-5 text-white/40">
+        <p className="mt-3 line-clamp-2 break-words text-sm leading-5 text-white/40">
           {repository.description}
         </p>
       )}
@@ -334,7 +344,7 @@ function RepositoryCard({ repository }: { repository: Repository }) {
 
 function EmptyRepositories() {
   return (
-    <div className="rounded-2xl border border-dashed border-white/10 p-12 text-center">
+    <div className="rounded-2xl border border-dashed border-white/10 px-5 py-10 text-center sm:p-12">
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5">
         <BookOpen size={21} className="text-white/40" />
       </div>
@@ -365,14 +375,18 @@ function StatCard({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-      <div className="mb-5 flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 text-white/60">
+    <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.02] p-4 transition hover:bg-white/[0.04] sm:p-5">
+      <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-xl bg-white/5 text-white/60">
         {icon}
       </div>
 
-      <p className="text-sm text-white/40">{label}</p>
+      <p className="break-words text-sm text-white/40">
+        {label}
+      </p>
 
-      <p className="mt-1 text-2xl font-semibold">{value}</p>
+      <p className="mt-1 text-2xl font-semibold">
+        {value}
+      </p>
     </div>
   );
 }
