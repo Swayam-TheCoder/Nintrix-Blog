@@ -12,6 +12,7 @@ import blogRoutes from "./src/routes/blog.routes.js";
 import blogVersionRoutes from "./src/routes/blog-version.routes.js";
 import publicBlogRoutes from "./src/routes/public-blog.routes.js";
 import invitationRoutes from "./src/routes/invitation.routes.js";
+import followRoutes from "./src/routes/follow.routes.js";
 
 const app = express();
 
@@ -47,5 +48,6 @@ app.use("/api/repositories", blogRoutes);
 app.use("/api/repositories", blogVersionRoutes);
 app.use("/api/public", publicBlogRoutes);
 app.use("/api", invitationRoutes);
+app.use("/api/users", followRoutes);
 
 export default app;
