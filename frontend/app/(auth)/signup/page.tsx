@@ -3,53 +3,51 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
+import { loginWithGoogle, signupUser } from "@/services/auth.service";
+
 
 export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (
-  e: React.FormEvent<HTMLFormElement>
-) => {
-  e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const formData = new FormData(e.currentTarget);
+    try {
+      const formData = new FormData(e.currentTarget);
 
-    const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
+      const name = formData.get("name") as string;
+      const email = formData.get("email") as string;
+      const password = formData.get("password") as string;
 
-    const { signupUser } = await import(
-      "@/services/auth.service"
-    );
+      await signupUser({
+        name,
+        email,
+        password,
+      });
 
-    await signupUser({
-      name,
-      email,
-      password,
-    });
+      alert("Account created. Please check your email to verify your account.");
 
-    alert(
-      "Account created. Please check your email to verify your account."
-    );
+      window.location.href = "/login";
+    } catch (error: any) {
+      console.error(error);
 
-    window.location.href = "/login";
+      alert(error?.response?.data?.message || "Signup failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  } catch (error: any) {
-    console.error(error);
-
-    alert(
-      error?.response?.data?.message ||
-        "Signup failed"
-    );
-
-  } finally {
-    setLoading(false);
-  }
-};
+  const handleGoogleSignup = async () => {
+    try {
+      await loginWithGoogle();
+    } catch (error: any) {
+      console.error("Google signup error:", error);
+      alert(error?.message || "Google signup failed");
+    }
+  };
 
   return (
     <div className="w-full max-w-md">
@@ -66,9 +64,7 @@ export default function SignupPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="mb-2 block text-sm text-zinc-300">
-              Name
-            </label>
+            <label className="mb-2 block text-sm text-zinc-300">Name</label>
 
             <input
               name="name"
@@ -80,9 +76,7 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm text-zinc-300">
-              Email
-            </label>
+            <label className="mb-2 block text-sm text-zinc-300">Email</label>
 
             <input
               name="email"
@@ -94,9 +88,7 @@ export default function SignupPage() {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm text-zinc-300">
-              Password
-            </label>
+            <label className="mb-2 block text-sm text-zinc-300">Password</label>
 
             <div className="relative">
               <input
@@ -113,11 +105,7 @@ export default function SignupPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-300"
               >
-                {showPassword ? (
-                  <EyeOff size={17} />
-                ) : (
-                  <Eye size={17} />
-                )}
+                {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
             </div>
           </div>
@@ -145,6 +133,7 @@ export default function SignupPage() {
 
         <button
           type="button"
+          onClick={handleGoogleSignup}
           className="flex h-11 w-full items-center justify-center gap-3 rounded-lg border border-white/[0.08] bg-white/[0.02] text-sm font-medium text-zinc-300 transition hover:bg-white/[0.05]"
         >
           Continue with Google
@@ -152,10 +141,7 @@ export default function SignupPage() {
 
         <p className="mt-7 text-center text-sm text-zinc-500">
           Already have an account?{" "}
-          <Link
-            href="/login"
-            className="text-white hover:text-zinc-300"
-          >
+          <Link href="/login" className="text-white hover:text-zinc-300">
             Sign in
           </Link>
         </p>

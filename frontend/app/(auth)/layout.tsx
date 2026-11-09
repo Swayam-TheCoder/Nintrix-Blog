@@ -20,7 +20,7 @@ export default function AuthLayout({
             </div>
 
             <span className="font-semibold tracking-tight">
-              BlogForge
+              NintrixBlog
             </span>
           </Link>
         </header>
