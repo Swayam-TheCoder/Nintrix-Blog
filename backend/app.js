@@ -32,12 +32,39 @@ app.use(cookieParser());
 
 app.use(morgan("dev"));
 
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "NintrixBlog API is running",
+  });
+});
+
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     success: true,
     message: "Backend is running",
   });
 });
+
+const allowedOrigins = [
+  "https://nintrix-blog-hello-e803509d.vercel.app",
+  "http://localhost:3000",
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/test", testRoutes);
