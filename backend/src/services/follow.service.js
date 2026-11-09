@@ -76,3 +76,49 @@ export const getFollowStats = async (userId) => {
     following: following || 0
   };
 };
+
+// Get all followers of a user
+export const getFollowers = async (userId) => {
+  const { data: follows, error: followsError } = await supabaseAdmin
+    .from("follows")
+    .select("follower_id")
+    .eq("following_id", userId);
+
+  if (followsError) throw new Error(followsError.message);
+
+  const userIds = (follows || []).map((follow) => follow.follower_id);
+
+  if (userIds.length === 0) return [];
+
+  const { data: profiles, error: profilesError } = await supabaseAdmin
+    .from("profiles")
+    .select("id, username, display_name, avatar_url, bio")
+    .in("id", userIds);
+
+  if (profilesError) throw new Error(profilesError.message);
+
+  return profiles || [];
+};
+
+// Get all users followed by a user
+export const getFollowing = async (userId) => {
+  const { data: follows, error: followsError } = await supabaseAdmin
+    .from("follows")
+    .select("following_id")
+    .eq("follower_id", userId);
+
+  if (followsError) throw new Error(followsError.message);
+
+  const userIds = (follows || []).map((follow) => follow.following_id);
+
+  if (userIds.length === 0) return [];
+
+  const { data: profiles, error: profilesError } = await supabaseAdmin
+    .from("profiles")
+    .select("id, username, display_name, avatar_url, bio")
+    .in("id", userIds);
+
+  if (profilesError) throw new Error(profilesError.message);
+
+  return profiles || [];
+};
