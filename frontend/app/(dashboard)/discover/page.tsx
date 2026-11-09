@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -16,10 +15,8 @@ import {
   type DiscoverProfile,
 } from "@/services/profile.service";
 
-import {
-  followUser,
-  unfollowUser,
-} from "@/services/follow.service";
+import { followUser, unfollowUser } from "@/services/follow.service";
+import Link from "next/link";
 
 export default function DiscoverPage() {
   const [query, setQuery] = useState("");
@@ -55,9 +52,7 @@ export default function DiscoverPage() {
         }
       } catch (err: any) {
         if (!cancelled) {
-          setError(
-            err.response?.data?.message || "Unable to search users."
-          );
+          setError(err.response?.data?.message || "Unable to search users.");
         }
       } finally {
         if (!cancelled) {
@@ -89,17 +84,15 @@ export default function DiscoverPage() {
         current.map((item) =>
           item.id === profile.id
             ? { ...item, is_following: !item.is_following }
-            : item
-        )
+            : item,
+        ),
       );
     } catch (err: any) {
       setError(
-        err.response?.data?.message || "Unable to update follow status."
+        err.response?.data?.message || "Unable to update follow status.",
       );
     } finally {
-      setBusyIds((current) =>
-        current.filter((id) => id !== profile.id)
-      );
+      setBusyIds((current) => current.filter((id) => id !== profile.id));
     }
   };
 
@@ -206,12 +199,17 @@ export default function DiscoverPage() {
 
                     <div className="min-w-0 flex-1">
                       <h3 className="truncate font-medium">
-                        {profile.display_name || profile.username}
+                        <Link
+                        href={`/users/${encodeURIComponent(profile.username)}`}
+                      >{profile.display_name || profile.username}</Link>
                       </h3>
 
-                      <p className="truncate text-xs text-violet-300">
+                      <Link
+                        href={`/users/${encodeURIComponent(profile.username)}`}
+                        className="truncate text-xs text-violet-300 hover:text-violet-200"
+                      >
                         @{profile.username}
-                      </p>
+                      </Link>
                     </div>
                   </div>
 

@@ -1,5 +1,6 @@
 import {
   getProfileByUserId,
+  getPublicProfileByUsername,
   searchProfiles,
   updateProfile
 } from "../services/profile.service.js";
@@ -62,6 +63,30 @@ export const searchUsers = async (req, res) => {
     });
   } catch (error) {
     return res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+
+export const getPublicProfile = async (req, res) => {
+  try {
+    const { username } = req.params;
+
+    const result = await getPublicProfileByUsername(username);
+
+    return res.status(200).json({
+      success: true,
+      ...result
+    });
+  } catch (error) {
+    console.error("Get public profile error:", error);
+
+    const statusCode =
+      error.message === "User not found" ? 404 : 500;
+
+    return res.status(statusCode).json({
       success: false,
       message: error.message
     });

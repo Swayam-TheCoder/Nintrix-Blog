@@ -60,3 +60,49 @@ export const searchProfiles = async (
 
   return response.data.profiles;
 };
+
+
+
+export interface PublicProfile {
+  profile: Profile;
+  stats: {
+    followers: number;
+    following: number;
+  };
+  repositories: {
+    id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+    created_at: string;
+  }[];
+  blogs: {
+    id: string;
+    repository_id: string;
+    title: string;
+    slug: string;
+    excerpt: string | null;
+    published_at: string | null;
+    repositories: {
+      id: string;
+      name: string;
+      slug: string;
+      visibility: string;
+    } | {
+      id: string;
+      name: string;
+      slug: string;
+      visibility: string;
+    }[];
+  }[];
+}
+
+export const getPublicProfile = async (
+  username: string
+): Promise<PublicProfile> => {
+  const response = await api.get(
+    `/profile/users/${encodeURIComponent(username)}`
+  );
+
+  return response.data;
+};
