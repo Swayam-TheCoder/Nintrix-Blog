@@ -1,9 +1,10 @@
 import {
   getProfileByUserId,
+  searchProfiles,
   updateProfile
 } from "../services/profile.service.js";
 
-import { updateProfileSchema } from "../validators/profile.validator.js";
+import { searchProfileSchema, updateProfileSchema } from "../validators/profile.validator.js";
 
 export const getMyProfile = async (req, res) => {
   try {
@@ -40,6 +41,26 @@ export const updateMyProfile = async (req, res) => {
   } catch (error) {
     console.error("Update profile error:", error);
 
+    return res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+
+export const searchUsers = async (req, res) => {
+  try {
+    const { q } = searchProfileSchema.parse(req.query);
+
+    const profiles = await searchProfiles(q, req.user.id);
+
+    return res.status(200).json({
+      success: true,
+      count: profiles.length,
+      profiles
+    });
+  } catch (error) {
     return res.status(400).json({
       success: false,
       message: error.message

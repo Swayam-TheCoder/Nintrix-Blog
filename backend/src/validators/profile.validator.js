@@ -30,3 +30,11 @@ export const updateProfileSchema = z.object({
     .url("Invalid avatar URL")
     .optional()
 });
+
+export const searchProfileSchema = z.object({
+  q: z
+    .string()
+    .trim()
+    .min(2, "Search must contain at least 2 characters")
+    .max(50, "Search cannot exceed 50 characters")
+});
