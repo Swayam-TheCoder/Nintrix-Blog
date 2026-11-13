@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight, Eye, EyeOff, Loader2 } from "lucide-react";
-import { loginWithGoogle, signupUser } from "@/services/auth.service";
+import { signupUser, loginWithGoogle } from "@/services/auth.service";
 
 
 export default function SignupPage() {
