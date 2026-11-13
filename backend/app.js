@@ -49,6 +49,7 @@ app.get("/api/health", (req, res) => {
 const allowedOrigins = [
   "https://nintrix-blog.vercel.app",
   "http://localhost:3000",
+  "https://nintrix-blog-nhp3nfxzm-hello-e803509d.vercel.app"
 ];
 
 app.use(
