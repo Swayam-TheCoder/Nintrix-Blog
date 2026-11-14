@@ -1,5 +1,5 @@
 
-import api from "@/lib/api";
+import { api } from "@/lib/api";
 
 // Get all bookmarks of logged-in user
 export const getBookmarks = async () => {
